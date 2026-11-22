@@ -1,0 +1,87 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/page_root" style="@style/Page" android:orientation="vertical" android:baselineAligned="false">
+    <LinearLayout style="@style/Row" android:baselineAligned="false" android:layout_marginBottom="12dp">
+        <ImageView android:layout_width="38dp" android:layout_height="38dp" android:src="@drawable/airport_icon" android:contentDescription="@null" />
+        <LinearLayout style="@style/Column" android:layout_width="0dp" android:layout_weight="1" android:layout_marginStart="10dp">
+            <TextView style="@style/Heading" android:text="@string/app_name" />
+            <TextView style="@style/Caption" android:text="@string/lint_ui_airport_location" android:textSize="11sp" />
+        </LinearLayout>
+        <FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <ImageButton android:id="@+id/notifications" style="@style/IconButton" android:src="@drawable/nav_bell"
+                android:contentDescription="@string/notices_title" android:scaleType="center" />
+            <TextView android:id="@+id/notification_count" style="@style/Caption" android:layout_gravity="end|top" android:background="@drawable/primary"
+                android:textColor="#FFFFFF" android:textSize="11sp" android:paddingHorizontal="5dp" android:paddingVertical="1dp"
+                android:importantForAccessibility="no" android:visibility="gone" />
+        </FrameLayout>
+        <Button android:id="@+id/more" style="@style/IconButton" android:text="@string/activity_home_more_text"
+            android:contentDescription="@string/activity_home_more_contentDescription" android:layout_marginStart="7dp" />
+    </LinearLayout>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:fillViewport="true" android:clipToPadding="false">
+        <LinearLayout style="@style/Column" android:paddingBottom="14dp">
+            <include android:id="@+id/staff_panel" layout="@layout/staff_panel" />
+            <FrameLayout android:id="@+id/airport_banner" android:layout_width="match_parent" android:layout_height="226dp"
+                android:background="@drawable/route_banner">
+                <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/airport_sunrise"
+                    android:scaleType="centerCrop" android:contentDescription="@null" />
+                <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/flight_deck_scrim" />
+                <kz.edu.airportcourse.ui.TravelSkyView android:layout_width="116dp" android:layout_height="116dp"
+                    android:layout_gravity="top|end" android:layout_marginEnd="5dp" android:importantForAccessibility="no" />
+                <LinearLayout style="@style/Column" android:layout_gravity="bottom" android:padding="18dp">
+                    <TextView android:id="@+id/welcome" style="@style/Caption" android:textColor="#D5E9FE" android:maxLines="1" android:ellipsize="end" />
+                    <TextView android:id="@+id/home_action" style="@style/Title" android:textSize="32sp"
+                        android:textColor="#FFFFFF" android:layout_marginTop="4dp" />
+                    <Button android:id="@+id/flights" style="@style/Secondary" android:layout_width="wrap_content"
+                        android:layout_marginTop="10dp" android:paddingHorizontal="18dp" />
+                </LinearLayout>
+            </FrameLayout>
+            <LinearLayout style="@style/Row" android:baselineAligned="false" android:layout_marginTop="10dp">
+                <Button android:id="@+id/weather" style="@style/Tile" android:drawableTop="@drawable/service_weather"
+                    android:drawablePadding="4dp" android:text="@string/lint_ui_home_astana_weather" />
+                <Button android:id="@+id/destination_weather_chip" style="@style/Tile" android:drawableTop="@drawable/flight_route"
+                    android:layout_marginStart="8dp" android:drawablePadding="4dp" android:text="@string/lint_ui_home_destination_weather" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/per_trip" style="@style/Column">
+                <LinearLayout style="@style/Row" android:baselineAligned="false" android:layout_marginTop="12dp">
+                    <TextView style="@style/Heading" android:layout_width="0dp" android:layout_weight="1" android:text="@string/lint_ui_next_trip_heading" />
+                    <Button android:id="@+id/saved" style="@style/Secondary" android:layout_width="wrap_content"
+                        android:drawableStart="@drawable/nav_saved" android:drawablePadding="4dp"
+                        android:text="@string/saved_flights_title" android:background="@android:color/transparent" />
+                </LinearLayout>
+                <LinearLayout android:id="@+id/next_trip" style="@style/Column" android:background="@drawable/flight_strip_bg"
+                    android:foreground="?android:attr/selectableItemBackground" android:focusable="true" android:padding="15dp">
+                    <TextView android:id="@+id/trip_route" style="@style/Caption" />
+                    <LinearLayout android:id="@+id/trip_codes" style="@style/Column" android:visibility="gone">
+                        <include layout="@layout/flight_route_fields" />
+                    </LinearLayout>
+                    <TextView android:id="@+id/trip_meta" style="@style/Heading" android:layout_marginTop="7dp" />
+                    <View android:layout_width="match_parent" android:layout_height="2dp" android:background="@drawable/dashed_rule"
+                        android:layerType="software" android:layout_marginVertical="9dp" />
+                    <TextView android:id="@+id/trip_progress" style="@style/Body" android:textColor="@color/blue" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView style="@style/Section" android:text="@string/explore_title" />
+            <LinearLayout style="@style/SettingsGroup" android:paddingHorizontal="8dp">
+                <LinearLayout style="@style/Row" android:baselineAligned="false">
+                    <Button android:id="@+id/maps" style="@style/ServiceButton" android:drawableStart="@drawable/service_map" android:text="@string/short_maps" />
+                    <Button android:id="@+id/official" style="@style/ServiceButton" android:drawableStart="@drawable/service_board" android:text="@string/short_board" />
+                </LinearLayout>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/line" />
+                <LinearLayout style="@style/Row" android:baselineAligned="false">
+                    <Button android:id="@+id/baggage" style="@style/ServiceButton" android:drawableStart="@drawable/service_guide" android:text="@string/short_guide" />
+                    <Button android:id="@+id/media" style="@style/ServiceButton" android:drawableStart="@drawable/nav_trip" android:text="@string/media_title" />
+                </LinearLayout>
+                <Button android:id="@+id/reviews" style="@style/SettingsAction" android:text="@string/reviews_title" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout style="@style/Row" android:baselineAligned="false" android:background="@drawable/card" android:padding="5dp" android:layout_marginTop="6dp">
+        <Button android:id="@+id/nav_flights" style="@style/DashboardTab" android:text="@string/flight_nav" android:drawableTop="@drawable/service_board" />
+        <Button android:id="@+id/bookings" style="@style/DashboardTab" android:text="@string/trips_nav" android:drawableTop="@drawable/nav_trip" />
+        <Button android:id="@+id/inbox" style="@style/DashboardTab" android:text="@string/support_title" android:drawableTop="@drawable/nav_chat" />
+        <Button android:id="@+id/profile" style="@style/DashboardTab" android:text="@string/profile_title" android:drawableTop="@drawable/nav_profile" />
+    </LinearLayout>
+</LinearLayout>

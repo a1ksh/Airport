@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/Column" android:padding="18dp" android:orientation="vertical">
+    <TextView style="@style/Caption" android:text="@string/dialog_ticket_text" />
+    <Spinner android:id="@+id/topic" android:layout_width="match_parent" android:layout_height="48dp" />
+    <EditText android:id="@+id/ticket_text" style="@style/Field" android:hint="@string/dialog_ticket_ticket_text_hint" android:importantForAutofill="no" android:inputType="textMultiLine|textCapSentences" android:minLines="3" android:maxLength="2000" />
+</LinearLayout>

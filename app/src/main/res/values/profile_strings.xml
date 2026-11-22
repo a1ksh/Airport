@@ -1,0 +1,27 @@
+<resources>
+    <string name="profile_title">Профиль</string>
+    <string name="profile_details">Жеке деректер</string>
+    <string name="profile_access">Қауіпсіздік</string>
+    <string name="profile_edit">Атымды өңдеу</string>
+    <string name="profile_password">Құпиясөзді ауыстыру</string>
+    <string name="profile_demo_help">Құпиясөзді жеке аккаунтта ауыстыруға болады.</string>
+    <string name="profile_preferences">Хабарландыру баптаулары</string>
+    <string name="flight_updates">Рейс өзгерістері</string>
+    <string name="flight_updates_hint">Қақпа, уақыт және мәртебе өзгергенде қолданба ішінде хабар келеді.</string>
+    <string name="password_current">Қазіргі құпиясөз</string>
+    <string name="password_new">Жаңа құпиясөз</string>
+    <string name="password_repeat">Жаңа құпиясөзді қайталау</string>
+    <string name="notices_title">Хабарландырулар</string>
+    <string name="notices_empty">Рейс туралы жаңа ақпарат осы жерде шығады.</string>
+    <string name="notices_read">Барлығын оқылды деп белгілеу</string>
+    <string name="trip_preparation">Ұшуға дайындық</string>
+    <string name="trip_upcoming">Алдағы</string>
+    <string name="trip_archive">Өткен және тоқтаған</string>
+    <string name="explore_title">Әуежай қызметтері</string>
+    <string name="short_weather">Ауа райы</string>
+    <string name="short_maps">Әуежайға бару</string>
+    <string name="short_board">Ресми табло</string>
+    <string name="short_guide">Жолға кеңес</string>
+    <string name="flight_nav">Рейстер</string>
+    <string name="trip_empty_title">Әзірге сапар жоспарланбаған</string>
+</resources>

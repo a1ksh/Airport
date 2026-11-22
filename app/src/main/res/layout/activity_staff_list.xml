@@ -1,0 +1,12 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/page_root" style="@style/Page" android:orientation="vertical">
+    <LinearLayout style="@style/Row" android:baselineAligned="false">
+        <Button android:id="@+id/back" style="@style/IconButton" android:text="@string/activity_admin_back_text"
+            android:contentDescription="@string/activity_admin_back_contentDescription" />
+        <TextView android:id="@+id/staff_list_title" style="@style/Title" android:layout_marginStart="10dp" android:textSize="23sp" />
+    </LinearLayout>
+    <TextView android:id="@+id/staff_list_subtitle" style="@style/Body" android:layout_marginTop="12dp" />
+    <TextView android:id="@+id/empty" style="@style/Body" android:layout_marginTop="12dp" />
+    <ListView android:id="@+id/staff_rows" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:layout_marginTop="11dp" android:clipToPadding="false" android:paddingBottom="8dp"
+        android:divider="@android:color/transparent" android:dividerHeight="8dp" />
+</LinearLayout>

@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/page_root" style="@style/Page" android:orientation="vertical">
+    <LinearLayout style="@style/Row" android:orientation="horizontal" android:baselineAligned="false">
+        <Button android:id="@+id/back" style="@style/IconButton" android:text="@string/activity_admin_back_text" android:contentDescription="@string/activity_admin_back_contentDescription"/>
+        <TextView style="@style/Title" android:layout_width="0dp" android:layout_weight="1" android:text="@string/passport_title" android:textSize="23sp" android:layout_marginStart="10dp"/>
+    </LinearLayout>
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true" android:layout_marginTop="12dp">
+        <LinearLayout style="@style/Column" android:paddingBottom="12dp">
+            <LinearLayout style="@style/Column" android:background="@drawable/route_banner" android:padding="20dp">
+                <TextView style="@style/Caption" android:text="@string/passport_caption" android:textColor="#C5E1FF"/>
+                <TextView android:id="@+id/passport_name" style="@style/Title" android:textColor="#FFFFFF" android:layout_marginTop="9dp"/>
+                <TextView android:id="@+id/passport_stats" style="@style/Body" android:textColor="#D5E8FC" android:layout_marginTop="10dp"/>
+            </LinearLayout>
+            <TextView style="@style/Section" android:text="@string/passport_cities"/>
+            <TextView style="@style/Body" android:text="@string/passport_hint"/>
+            <LinearLayout android:id="@+id/passport_stamps" style="@style/Column" android:layout_marginTop="16dp"/>
+            <LinearLayout android:id="@+id/passport_empty" style="@style/Card" android:visibility="gone">
+                <TextView style="@style/Heading" android:text="@string/passport_empty_title"/>
+                <TextView style="@style/Body" android:text="@string/passport_empty" android:layout_marginTop="9dp"/>
+            </LinearLayout>
+            <TextView android:id="@+id/passport_city_title" style="@style/Section"/>
+            <LinearLayout android:id="@+id/passport_trips" style="@style/Column"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

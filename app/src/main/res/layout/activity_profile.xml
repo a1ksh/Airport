@@ -1,0 +1,56 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/page_root" style="@style/Page" android:orientation="vertical" android:baselineAligned="false">
+    <LinearLayout style="@style/Row" android:baselineAligned="false" android:layout_marginBottom="12dp">
+        <Button android:id="@+id/back" style="@style/IconButton" android:text="@string/activity_admin_back_text"
+            android:contentDescription="@string/activity_admin_back_contentDescription" />
+        <TextView style="@style/Title" android:text="@string/profile_title" android:layout_marginStart="12dp" />
+    </LinearLayout>
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:fillViewport="true" android:clipToPadding="false">
+        <LinearLayout style="@style/Column" android:paddingBottom="12dp">
+            <LinearLayout style="@style/Row" android:background="@drawable/route_banner" android:padding="18dp" android:baselineAligned="false">
+                <TextView android:id="@+id/profile_avatar" style="@style/Heading" android:layout_width="56dp" android:layout_height="56dp"
+                    android:gravity="center" android:background="@drawable/profile_avatar" android:importantForAccessibility="no" />
+                <LinearLayout style="@style/Column" android:layout_width="0dp" android:layout_weight="1" android:layout_marginStart="13dp">
+                    <TextView android:id="@+id/profile_role" style="@style/Caption" android:textColor="#C5E1FF" />
+                    <TextView android:id="@+id/profile_name" style="@style/Heading" android:textSize="23sp"
+                        android:textColor="#FFFFFF" android:layout_marginTop="3dp" />
+                    <TextView android:id="@+id/profile_email" style="@style/Body" android:textColor="#D5E8FC" android:layout_marginTop="3dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout style="@style/Row" android:baselineAligned="false" android:layout_marginTop="12dp">
+                <Button android:id="@+id/profile_trips" style="@style/Tile" android:drawableTop="@drawable/nav_trip" android:drawablePadding="3dp" />
+                <Button android:id="@+id/profile_saved" style="@style/Tile" android:drawableTop="@drawable/nav_saved" android:drawablePadding="3dp"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <TextView style="@style/Section" android:text="@string/profile_details" />
+            <LinearLayout style="@style/SettingsGroup">
+                <Button android:id="@+id/edit_name" style="@style/SettingsAction" android:text="@string/profile_edit" />
+            </LinearLayout>
+            <TextView style="@style/Section" android:text="@string/profile_access" />
+            <LinearLayout style="@style/SettingsGroup">
+                <Button android:id="@+id/change_password" style="@style/SettingsAction" android:text="@string/profile_password" />
+                <TextView android:id="@+id/demo_help" style="@style/Body" android:paddingHorizontal="12dp" android:paddingBottom="8dp"
+                    android:text="@string/profile_demo_help" android:visibility="gone" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/preferences" style="@style/Column">
+                <TextView style="@style/Section" android:text="@string/profile_preferences" />
+                <LinearLayout style="@style/SettingsGroup" android:paddingHorizontal="12dp" android:paddingVertical="4dp">
+                    <Switch android:id="@+id/flight_alerts" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:minHeight="48dp" android:text="@string/flight_updates" android:textColor="@color/ink"
+                        android:textSize="15sp" android:showText="false" />
+                    <TextView style="@style/Body" android:text="@string/flight_updates_hint" android:paddingBottom="8dp" />
+                </LinearLayout>
+            </LinearLayout>
+            <TextView style="@style/Section" android:text="@string/profile_more" />
+            <LinearLayout style="@style/SettingsGroup">
+                <Button android:id="@+id/passport" style="@style/SettingsAction" android:text="@string/passport_title" android:visibility="gone"/>
+                <Button android:id="@+id/media" style="@style/SettingsAction" android:text="@string/media_title" />
+                <Button android:id="@+id/reviews" style="@style/SettingsAction" android:text="@string/reviews_title" />
+            </LinearLayout>
+            <Button android:id="@+id/logout" style="@style/Secondary" android:text="@string/activity_home_logout_text"
+                android:layout_marginTop="17dp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

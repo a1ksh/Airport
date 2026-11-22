@@ -1,0 +1,31 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/page_root" style="@style/Page" android:orientation="vertical" android:baselineAligned="false">
+    <LinearLayout style="@style/Row" android:baselineAligned="false">
+        <Button android:id="@+id/back" style="@style/IconButton" android:text="@string/activity_admin_back_text" android:contentDescription="@string/activity_admin_back_contentDescription" />
+        <TextView style="@style/Title" android:text="@string/short_weather" android:layout_marginStart="12dp" />
+    </LinearLayout>
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true">
+        <LinearLayout style="@style/Column" android:paddingBottom="12dp">
+            <FrameLayout android:layout_width="match_parent" android:layout_height="126dp" android:layout_marginTop="12dp" android:background="@drawable/route_banner">
+                <kz.edu.airportcourse.ui.TravelSkyView android:layout_width="118dp" android:layout_height="118dp"
+                    android:layout_gravity="end|center_vertical" android:layout_marginEnd="7dp" android:importantForAccessibility="no" />
+                <LinearLayout style="@style/Column" android:layout_gravity="center_vertical" android:layout_marginEnd="117dp" android:paddingStart="16dp" android:paddingEnd="0dp">
+                    <TextView style="@style/Caption" android:text="@string/lint_ui_weather_before_trip" android:textColor="#C8EBFF" />
+                    <TextView style="@style/Heading" android:text="@string/lint_ui_weather_directions" android:textColor="#FFFFFF" android:textSize="22sp" android:layout_marginTop="5dp" />
+                </LinearLayout>
+            </FrameLayout>
+            <TextView style="@style/Section" android:text="@string/lint_ui_weather_destination" />
+            <Spinner android:id="@+id/weather_destination" android:layout_width="match_parent" android:layout_height="48dp"
+                android:background="@drawable/secondary" android:paddingHorizontal="10dp" android:contentDescription="@string/lint_ui_weather_destination_select" />
+            <LinearLayout style="@style/Row" android:gravity="top" android:baselineAligned="false" android:layout_marginTop="10dp">
+                <include android:id="@+id/astana_weather" layout="@layout/weather_city_card" />
+                <include android:id="@+id/destination_weather" layout="@layout/weather_city_card" android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="8dp" />
+            </LinearLayout>
+            <TextView android:id="@+id/forecast_title" style="@style/Section" android:text="@string/lint_ui_weather_forecast_title" />
+            <TextView android:id="@+id/forecast_empty" style="@style/Body" android:text="@string/lint_ui_weather_forecast_loading" />
+            <LinearLayout android:id="@+id/weather_days" style="@style/SettingsGroup" android:orientation="vertical" />
+            <Button android:id="@+id/refresh" style="@style/Primary" android:text="@string/activity_weather_refresh_text" android:layout_marginTop="12dp" />
+            <Button android:id="@+id/weather_source" style="@style/Secondary" android:text="@string/activity_weather_weather_source_text" android:layout_marginTop="8dp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

@@ -1,0 +1,14 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/page_root" style="@style/Page" android:orientation="vertical">
+    <LinearLayout style="@style/Row" android:baselineAligned="false">
+        <Button android:id="@+id/back" style="@style/IconButton" android:text="@string/activity_admin_back_text"
+            android:contentDescription="@string/activity_admin_back_contentDescription" />
+        <TextView style="@style/Title" android:text="@string/notices_title" android:textSize="23sp" android:layout_marginStart="10dp" />
+    </LinearLayout>
+    <Button android:id="@+id/notices_messages" style="@style/Secondary" android:text="@string/support_title"
+        android:drawableStart="@drawable/nav_chat" android:layout_marginTop="12dp" />
+    <TextView style="@style/Section" android:text="@string/flight_updates" />
+    <Button android:id="@+id/notices_read_all" style="@style/SettingsAction" android:text="@string/notices_read" />
+    <TextView android:id="@+id/empty" style="@style/Body" android:text="@string/notices_empty" android:layout_marginTop="8dp" />
+    <ListView android:id="@+id/notice_list" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:clipToPadding="false" android:paddingBottom="8dp" android:divider="@android:color/transparent" android:dividerHeight="8dp" />
+</LinearLayout>

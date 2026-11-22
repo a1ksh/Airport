@@ -1,0 +1,32 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/page_root" style="@style/Page" android:orientation="vertical">
+    <LinearLayout style="@style/Row" android:baselineAligned="false">
+        <Button android:id="@+id/back" style="@style/Secondary" android:text="@string/activity_admin_back_text"
+            android:layout_width="48dp" android:minWidth="48dp" android:contentDescription="@string/activity_admin_back_contentDescription" />
+        <TextView style="@style/Title" android:text="@string/flights_text" android:layout_marginStart="12dp" />
+    </LinearLayout>
+    <LinearLayout style="@style/Row" android:layout_marginTop="10dp" android:baselineAligned="false">
+        <Button android:id="@+id/departures" style="@style/Primary" android:text="@string/activity_flights_departures_text"
+            android:layout_width="0dp" android:layout_weight="1" />
+        <Button android:id="@+id/arrivals" style="@style/Secondary" android:text="@string/activity_flights_arrivals_text"
+            android:layout_width="0dp" android:layout_weight="1" android:layout_marginStart="8dp" />
+    </LinearLayout>
+    <EditText android:id="@+id/search" style="@style/Field" android:hint="@string/activity_flights_search_hint" android:importantForAutofill="no"
+        android:inputType="text" android:singleLine="true" android:imeOptions="actionSearch" />
+    <LinearLayout style="@style/Row" android:orientation="horizontal" android:baselineAligned="false" android:layout_marginTop="7dp">
+        <Button android:id="@+id/select_date" style="@style/NavButton" android:text="@string/flight_date" android:layout_marginEnd="6dp" />
+        <Button android:id="@+id/clear_date" style="@style/Secondary" android:layout_width="48dp" android:minWidth="48dp"
+            android:text="@string/lint_ui_clear_date_symbol" android:contentDescription="@string/reset_date" android:layout_marginEnd="6dp" android:visibility="gone" />
+        <Button android:id="@+id/saved_filter" style="@style/NavButton" android:text="@string/saved_flights_title"
+            android:contentDescription="@string/show_saved_flights" />
+    </LinearLayout>
+    <Button android:id="@+id/add_flight" style="@style/Primary" android:text="@string/activity_flights_add_flight_text"
+        android:layout_marginTop="8dp" android:visibility="gone" />
+    <Button android:id="@+id/disruption_filter" style="@style/Secondary" android:text="@string/lint_ui_disrupted_flights"
+        android:layout_marginTop="6dp" android:visibility="gone" />
+    <TextView android:id="@+id/results" style="@style/Caption" android:layout_marginTop="14dp" />
+    <TextView android:id="@+id/empty" style="@style/Body" android:text="@string/activity_flights_empty_text" android:layout_marginTop="8dp" />
+    <ListView android:id="@+id/flight_list" android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1" android:divider="@android:color/transparent" android:dividerHeight="8dp"
+        android:layout_marginTop="8dp" android:paddingBottom="8dp" android:clipToPadding="false"
+        android:listSelector="@android:color/transparent" />
+</LinearLayout>

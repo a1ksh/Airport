@@ -1,0 +1,35 @@
+<resources>
+    <string name="reviews_title">Пікірлер</string>
+    <string name="review_compose">Пікір қалдыру</string>
+    <string name="review_admin_hint">Жолаушылардың бағалары мен ұсыныстары. Бағалар саны дерекқордағы барлық пікір бойынша есептеледі.</string>
+    <string name="review_passenger_hint">Сапар тәжірибеңізді бағалап, ұсынысыңызды әкімшіге жіберіңіз.</string>
+    <string name="review_no_ratings">Әзірге баға жоқ</string>
+    <string name="review_your_latest">Соңғы пікіріңіз</string>
+    <string name="review_private_hint">Әр жіберілген пікір жеке сақталады. Оларды әуежай әкімшісі көреді.</string>
+    <string name="review_thanks">Пікіріңізге рақмет!</string>
+    <string name="reviews_empty">Әзірге пікір жоқ.</string>
+    <string name="review_rating_hint">Қызмет сапасына 1–5 жұлдыз қойыңыз</string>
+    <string name="review_body_hint">Не ұнады? Нені жақсартуға болады?</string>
+    <string name="review_cancel">Кері</string>
+    <string name="review_send">Жіберу</string>
+    <string name="review_sent">Пікір әкімшіге жіберілді.</string>
+    <string name="profile_more">Сапар әлемі</string>
+    <string name="media_title">Бейнемедиа</string>
+    <string name="media_globe">Жер шарын айналған ұшақ анимациясы</string>
+    <string name="media_journey">Саяхатқа шабыт</string>
+    <string name="media_description">Аспандағы көріністер, ұшу сәттері және жаңа бағыттар.</string>
+    <string name="media_choose">Бейне таңдау</string>
+    <string name="media_player">Саяхат бейнеойнатқышы</string>
+    <string name="media_play">Ойнату</string>
+    <string name="media_pause">Кідірту</string>
+    <string name="media_stop">Тоқтату</string>
+    <string name="media_ready">Дайын · Ойнату батырмасын басыңыз</string>
+    <string name="media_loading">Бейне дайындалуда…</string>
+    <string name="media_finished">Бейне аяқталды · Қайта ойнатуға болады</string>
+    <string name="media_error">Бейнені ашу мүмкін болмады. Қайта ойнатып көріңіз.</string>
+    <string name="media_controls_hint">Бейнені түртіп, уақыт жолағымен қажетті сәтке өтіңіз. Екі бейне де интернетсіз ойнатылады.</string>
+    <string-array name="media_titles">
+        <item>Бұлттар үстіндегі саяхат</item>
+        <item>Ұшудың ерекше сәттері</item>
+    </string-array>
+</resources>

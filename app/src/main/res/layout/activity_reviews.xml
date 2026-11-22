@@ -1,0 +1,17 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/page_root" style="@style/Page" android:orientation="vertical">
+    <LinearLayout style="@style/Row" android:baselineAligned="false">
+        <Button android:id="@+id/back" style="@style/IconButton" android:text="@string/activity_admin_back_text"
+            android:contentDescription="@string/activity_admin_back_contentDescription" />
+        <TextView style="@style/Title" android:text="@string/reviews_title" android:textSize="25sp" android:layout_marginStart="10dp" />
+    </LinearLayout>
+    <TextView android:id="@+id/review_description" style="@style/Body" android:layout_marginTop="12dp" />
+    <LinearLayout style="@style/Card">
+        <TextView android:id="@+id/review_summary" style="@style/Heading" />
+        <TextView android:id="@+id/review_distribution" style="@style/Body" android:layout_marginTop="8dp" />
+    </LinearLayout>
+    <Button android:id="@+id/review_compose" style="@style/Primary" android:text="@string/review_compose" android:layout_marginTop="12dp" />
+    <TextView android:id="@+id/empty" style="@style/Body" android:text="@string/reviews_empty" android:layout_marginTop="16dp" />
+    <ListView android:id="@+id/review_list" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:layout_marginTop="12dp" android:clipToPadding="false" android:paddingBottom="8dp"
+        android:divider="@android:color/transparent" android:dividerHeight="8dp" />
+</LinearLayout>

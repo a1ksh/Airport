@@ -1,0 +1,20 @@
+<resources>
+    <string name="passport_title">Саяхат паспортым</string>
+    <string name="passport_caption">МЕНІҢ ӘЛЕМІМ</string>
+    <string name="passport_stats">%1$d сапар  ·  %2$d қала  ·  %3$d ел</string>
+    <string name="passport_profile">Саяхат паспортым · %1$d сапар, %2$d қала</string>
+    <string name="passport_stamp_count">%1$d сапар</string>
+    <string name="passport_stamp_description">%1$s, %2$d сапар. Сапарларды көрсету</string>
+    <string name="passport_cities">Қала мөрлері</string>
+    <string name="passport_hint">Қаланың мөрін басып, сол жерге барған сапарларыңызды ашыңыз. Мөрді оператор сапар аяқталғанын растаған кезде аласыз.</string>
+    <string name="passport_empty_title">Алғашқы мөріңіз алда</string>
+    <string name="passport_empty">Рейске бронь жасап, операторда тіркеліңіз. Сапар аяқталған соң оператор оны растайды — қаланың мөрі осы жерде пайда болады.</string>
+    <string name="passport_city_trips">%1$s · сапарларым</string>
+    <string name="passport_trip_details">%1$s · %2$s\n%3$s · Орын %4$s</string>
+    <string name="passport_trip_done">Сапар аяқталды</string>
+    <string name="passport_finish">Сапарды аяқтау</string>
+    <string name="passport_confirm">%1$s · %2$s\nЖолаушы сапарын аяқтағанын растайсыз ба? Қала мөрі оның саяхат паспортына қосылады.</string>
+    <string name="passport_finish_success">Сапар расталды. Қала мөрі қосылды.</string>
+    <string name="passport_finish_unavailable">Бұл сапарды қазір аяқтау мүмкін емес.</string>
+    <string name="passport_manifest_hint">%1$s · %2$s\nСапарды рейске тіркелгеннен кейін және ұшу уақыты өткенде аяқтауға болады. Оның аяқталғанын оператор растайды.</string>
+</resources>

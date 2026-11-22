@@ -1,0 +1,27 @@
+<resources>
+    <string name="lint_ui_operator_add">＋ Оператор қосу</string>
+    <string name="lint_ui_account_search">Аты немесе email</string>
+    <string name="lint_ui_account_all_roles">Барлық рөлдер</string>
+    <string name="lint_ui_account_none">Аккаунт табылмады.</string>
+    <string name="lint_ui_find_flight">Рейс іздеу</string>
+    <string name="lint_ui_clear_date_symbol" translatable="false">×</string>
+    <string name="lint_ui_disrupted_flights">Кешіккен және тоқтаған</string>
+    <string name="lint_ui_airport_location">АСТАНА · NQZ</string>
+    <string name="lint_ui_home_astana_weather">Астана\nАуа райы</string>
+    <string name="lint_ui_home_destination_weather">Бағыт қаласы\nАуа райы</string>
+    <string name="lint_ui_next_trip_heading">Келесі сапар</string>
+    <string name="lint_ui_weather_before_trip">САПАР АЛДЫНДА</string>
+    <string name="lint_ui_weather_directions">Астана және бағыттар</string>
+    <string name="lint_ui_weather_destination">Бағыт қаласы</string>
+    <string name="lint_ui_weather_destination_select">Бағыт қаласын таңдау</string>
+    <string name="lint_ui_weather_forecast_title">5 күндік болжам</string>
+    <string name="lint_ui_weather_forecast_loading">Болжам жүктелуде…</string>
+    <string name="lint_ui_operator_name">Аты-жөні</string>
+    <string name="lint_ui_operator_password">Бастапқы құпиясөз</string>
+    <string name="lint_ui_task_documents">Ұшу құжаттарын дайындадым</string>
+    <string name="lint_ui_task_baggage">Багаж шарттарын тексердім</string>
+    <string name="lint_ui_task_transport">Әуежайға баратын жолды жоспарладым</string>
+    <string name="lint_ui_task_pass">Талонды сақтап қойдым</string>
+    <string name="lint_ui_staff_checkin">Бронь кодымен тіркеу</string>
+    <string name="lint_ui_staff_log">Әрекеттер журналы</string>
+</resources>

@@ -1,0 +1,6 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/Row"
+    android:baselineAligned="false" android:paddingHorizontal="11dp" android:paddingVertical="9dp">
+    <TextView android:id="@+id/forecast_date" style="@style/Caption" android:layout_width="55dp" />
+    <TextView android:id="@+id/forecast_status" style="@style/Body" android:layout_width="0dp" android:layout_weight="1" />
+    <TextView android:id="@+id/forecast_range" style="@style/Heading" android:textSize="15sp" />
+</LinearLayout>

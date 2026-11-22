@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/page_root" style="@style/Page" android:orientation="vertical">
+    <LinearLayout style="@style/Row" android:orientation="horizontal" android:baselineAligned="false">
+        <Button android:id="@+id/back" style="@style/Secondary" android:text="@string/activity_admin_back_text" android:layout_width="44dp" android:minWidth="44dp" android:contentDescription="@string/activity_admin_back_contentDescription" />
+        <TextView style="@style/Heading" android:text="@string/chat_text" android:layout_marginStart="12dp" />
+    </LinearLayout>
+    <LinearLayout style="@style/Card" android:orientation="vertical">
+        <TextView android:id="@+id/ticket_id" style="@style/Caption" />
+        <TextView android:id="@+id/subject" style="@style/Heading" android:layout_marginTop="5dp" />
+        <TextView android:id="@+id/status" style="@style/Body" android:layout_marginTop="3dp" />
+        <Button android:id="@+id/ticket_status" style="@style/Secondary" android:text="@string/activity_chat_ticket_status_text" android:layout_marginTop="8dp" />
+    </LinearLayout>
+    <TextView android:id="@+id/closed" style="@style/Body" android:text="@string/activity_chat_closed_text" android:layout_marginTop="9dp" />
+    <ListView android:id="@+id/chat_list" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:divider="@android:color/transparent" android:dividerHeight="8dp" android:layout_marginTop="9dp" android:listSelector="@android:color/transparent" />
+    <EditText android:id="@+id/message" style="@style/Field" android:hint="@string/activity_chat_message_hint" android:importantForAutofill="no" android:inputType="textMultiLine|textCapSentences" android:maxLength="2000" android:maxLines="3" />
+    <Button android:id="@+id/send" style="@style/Primary" android:text="@string/activity_chat_send_text" android:layout_marginTop="8dp" />
+</LinearLayout>

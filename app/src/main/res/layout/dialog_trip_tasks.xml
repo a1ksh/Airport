@@ -1,0 +1,7 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/Column" android:paddingHorizontal="18dp" android:paddingBottom="8dp">
+    <TextView android:id="@+id/trip_tasks_route" style="@style/Body" android:layout_marginBottom="8dp" />
+    <CheckBox android:id="@+id/task_documents" style="@style/TripCheck" android:text="@string/lint_ui_task_documents" />
+    <CheckBox android:id="@+id/task_baggage" style="@style/TripCheck" android:text="@string/lint_ui_task_baggage" />
+    <CheckBox android:id="@+id/task_transport" style="@style/TripCheck" android:text="@string/lint_ui_task_transport" />
+    <CheckBox android:id="@+id/task_pass" style="@style/TripCheck" android:text="@string/lint_ui_task_pass" />
+</LinearLayout>

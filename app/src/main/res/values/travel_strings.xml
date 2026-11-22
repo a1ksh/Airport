@@ -1,0 +1,14 @@
+<resources>
+    <string name="travel_tagline">Астана әуежайы</string>
+    <string name="saved_flights_title">Сақталған</string>
+    <string name="support_title">Хабарлар</string>
+    <string name="trips_nav">Сапарлар</string>
+    <string name="travel_guide">Жолаушыға көмек</string>
+    <string name="flight_date">Күнді таңдау</string>
+    <string name="reset_date">Күн сүзгісін тазарту</string>
+    <string name="show_saved_flights">Сақталған рейстер</string>
+    <string name="seat_legend">Ашық орындарды таңдауға болады. Сұр орындар бос емес.</string>
+    <string name="select_seat">Орын таңдау</string>
+    <string name="demo_pass">ДЕМО ОТЫРҒЫЗУ ТАЛОНЫ</string>
+    <string name="share_booking">Бронь мәліметін бөлісу</string>
+</resources>

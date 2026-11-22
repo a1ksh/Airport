@@ -1,0 +1,9 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/Column" android:padding="20dp">
+    <TextView style="@style/Body" android:text="@string/review_rating_hint" />
+    <RatingBar android:id="@+id/review_rating" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:numStars="5" android:stepSize="1" android:rating="5" android:isIndicator="false"
+        android:contentDescription="@string/review_rating_hint" android:layout_marginTop="8dp" />
+    <EditText android:id="@+id/review_body" style="@style/Field" android:hint="@string/review_body_hint"
+        android:inputType="textCapSentences|textMultiLine" android:gravity="top|start" android:minLines="4"
+        android:maxLength="2000" android:importantForAutofill="no" />
+</LinearLayout>

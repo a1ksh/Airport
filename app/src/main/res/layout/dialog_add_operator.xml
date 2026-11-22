@@ -1,0 +1,5 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/Column" android:paddingHorizontal="20dp" android:paddingBottom="8dp">
+    <EditText android:id="@+id/operator_name" style="@style/Field" android:hint="@string/lint_ui_operator_name" android:importantForAutofill="no" android:inputType="textPersonName" android:singleLine="true" android:maxLength="60" />
+    <EditText android:id="@+id/operator_email" style="@style/Field" android:hint="@string/activity_login_email_hint" android:importantForAutofill="no" android:inputType="textEmailAddress" android:singleLine="true" android:maxLength="90" />
+    <EditText android:id="@+id/operator_password" style="@style/Field" android:hint="@string/lint_ui_operator_password" android:importantForAutofill="no" android:inputType="textPassword" android:singleLine="true" android:maxLength="80" />
+</LinearLayout>

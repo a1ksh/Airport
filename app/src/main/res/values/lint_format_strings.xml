@@ -1,0 +1,9 @@
+<resources>
+    <string name="booking_when_format">%1$s · Қақпа %2$s%3$s</string>
+    <string name="trip_tasks_route_format">%1$s · %2$s</string>
+    <string name="trip_flight_time_format">"%1$s  ·  %2$s"</string>
+    <string name="trip_meta_format">Қақпа %1$s%2$s\n%3$s%4$s</string>
+    <string name="trip_tasks_suffix_format">"  ·  %1$s"</string>
+    <string name="flight_weather_format">%1$s · %2$s</string>
+    <string name="selected_seat_format">Таңдалған орын · %1$s</string>
+</resources>

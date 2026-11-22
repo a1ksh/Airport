@@ -1,0 +1,13 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Row" android:baselineAligned="false" android:layout_marginTop="10dp">
+    <LinearLayout style="@style/Column" android:layout_width="0dp" android:layout_weight="1">
+        <TextView android:id="@+id/from_code" style="@style/AirportCode" android:maxLines="1" android:ellipsize="end" />
+        <TextView android:id="@+id/from_city" style="@style/Body" android:maxLines="2" />
+    </LinearLayout>
+    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_marginHorizontal="5dp"
+        android:src="@drawable/flight_route" android:contentDescription="@null" />
+    <LinearLayout style="@style/Column" android:layout_width="0dp" android:layout_weight="1" android:gravity="end">
+        <TextView android:id="@+id/to_code" style="@style/AirportCode" android:maxLines="1" android:ellipsize="end" />
+        <TextView android:id="@+id/to_city" style="@style/Body" android:maxLines="2" android:gravity="end" />
+    </LinearLayout>
+</LinearLayout>

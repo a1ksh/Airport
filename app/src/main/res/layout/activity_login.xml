@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/page_root" style="@style/Page" android:orientation="vertical">
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true" android:clipToPadding="false">
+        <LinearLayout style="@style/Column" android:paddingBottom="12dp" android:orientation="vertical">
+            <include layout="@layout/travel_hero" />
+            <LinearLayout style="@style/Card" android:orientation="vertical">
+                <TextView android:id="@+id/login_title" style="@style/Heading" android:text="@string/activity_login_login_title_text" />
+                <EditText android:id="@+id/name" style="@style/Field" android:hint="@string/activity_login_name_hint" android:autofillHints="name" android:inputType="textPersonName" android:maxLength="60" android:visibility="gone" />
+                <EditText android:id="@+id/email" style="@style/Field" android:hint="@string/activity_login_email_hint" android:autofillHints="username" android:inputType="textEmailAddress" android:maxLength="90" />
+                <EditText android:id="@+id/password" style="@style/Field" android:hint="@string/activity_login_password_hint" android:autofillHints="password" android:inputType="textPassword" android:maxLength="80" />
+                <Button android:id="@+id/login" style="@style/Primary" android:text="@string/activity_login_login_text" android:layout_marginTop="13dp" />
+                <Button android:id="@+id/register" style="@style/Secondary" android:text="@string/activity_login_register_text" android:layout_marginTop="6dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

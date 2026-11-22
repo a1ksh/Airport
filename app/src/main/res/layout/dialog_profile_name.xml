@@ -1,0 +1,4 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/Column" android:paddingHorizontal="22dp" android:paddingBottom="8dp">
+    <EditText android:id="@+id/edit_display_name" style="@style/Field" android:hint="@string/activity_login_name_hint" android:autofillHints="name"
+        android:inputType="textPersonName|textCapWords" android:singleLine="true" android:maxLength="60" />
+</LinearLayout>

@@ -1,0 +1,26 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'kz.edu.airportcourse'
+    compileSdk 37
+
+    defaultConfig {
+        applicationId 'kz.edu.airportcourse'
+        minSdk 26
+        targetSdk 37
+        versionCode 1
+        versionName '1.0'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        encoding 'UTF-8'
+    }
+}
+
+dependencies {
+    implementation 'com.google.zxing:core:3.5.4'
+}

@@ -1,0 +1,18 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/Column" android:visibility="gone">
+    <LinearLayout style="@style/Column" android:background="@drawable/route_banner" android:padding="19dp">
+        <TextView android:id="@+id/staff_identity" style="@style/Caption" android:textColor="#C8EBFF" />
+        <TextView android:id="@+id/staff_title" style="@style/Title" android:textColor="#FFFFFF"
+            android:textSize="26sp" android:layout_marginTop="5dp" />
+        <TextView android:id="@+id/staff_date" style="@style/Body" android:textColor="#D9EDFF" android:layout_marginTop="6dp" />
+    </LinearLayout>
+    <LinearLayout style="@style/Row" android:baselineAligned="false" android:layout_marginTop="10dp">
+        <Button android:id="@+id/staff_first" style="@style/Tile" android:minHeight="69dp" android:textSize="15sp" android:drawableTop="@drawable/service_board" android:drawablePadding="4dp" />
+        <Button android:id="@+id/staff_second" style="@style/Tile" android:minHeight="69dp" android:textSize="15sp" android:layout_marginStart="8dp" android:drawableTop="@drawable/service_guide" android:drawablePadding="4dp" />
+    </LinearLayout>
+    <LinearLayout style="@style/SettingsGroup" android:layout_marginTop="10dp">
+        <Button android:id="@+id/staff_incidents" style="@style/SettingsAction" android:visibility="gone" />
+        <Button android:id="@+id/checkin" style="@style/SettingsAction" android:text="@string/lint_ui_staff_checkin" android:visibility="gone" />
+        <Button android:id="@+id/accounts" style="@style/SettingsAction" android:text="@string/activity_home_accounts_text" android:visibility="gone" />
+        <Button android:id="@+id/staff_log" style="@style/SettingsAction" android:text="@string/lint_ui_staff_log" />
+    </LinearLayout>
+</LinearLayout>
