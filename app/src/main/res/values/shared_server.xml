@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shared_server_url" translatable="false"></string>
+    <string name="shared_server">Сервер</string>
+    <string name="shared_server_title">Airport сервері</string>
+    <string name="shared_server_help">Жоба иесі берген HTTPS сілтемесін енгізіңіз.</string>
+    <string name="shared_server_connect">Қосылу</string>
+    <string name="shared_server_invalid">Толық HTTPS мекенжайын енгізіңіз.</string>
+    <string name="shared_server_unavailable">Airport серверінен жауап келмеді. Сілтемені және интернетті тексеріңіз.</string>
+    <string name="shared_server_retry">Қайталап көру</string>
+    <string name="shared_server_offline">Серверге қосылу мүмкін болмады</string>
+    <string name="shared_server_retry_help">Интернетті тексеріңіз. Сервердің сілтемесі өзгерсе, жоғарыдағы «Сервер» батырмасын басыңыз.</string>
+    <string name="shared_server_external_missing">Сілтемені ашатын қолданба табылмады.</string>
+</resources>

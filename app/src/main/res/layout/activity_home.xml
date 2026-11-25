@@ -74,6 +74,7 @@
                     <Button android:id="@+id/media" style="@style/ServiceButton" android:drawableStart="@drawable/nav_trip" android:text="@string/media_title" />
                 </LinearLayout>
                 <Button android:id="@+id/reviews" style="@style/SettingsAction" android:text="@string/reviews_title" />
+                <Button android:id="@+id/open_about" style="@style/SettingsAction" android:text="@string/about_title" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

@@ -36,6 +36,7 @@ public final class HomeActivity extends BaseActivity {
         click(R.id.baggage, this::guide);
         click(R.id.media, () -> open(MediaActivity.class));
         click(R.id.reviews, () -> open(ReviewsActivity.class));
+        click(R.id.open_about, () -> open(AboutActivity.class));
         click(R.id.more, this::menu);
     }
 
@@ -169,9 +170,7 @@ public final class HomeActivity extends BaseActivity {
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.menu_map) external(MAPS, "com.google.android.apps.maps");
             else if (item.getItemId() == R.id.menu_board) external("https://www.nn-airport.kz/flight-status", null);
-            else new AlertDialog.Builder(this).setTitle("Астана әуежайы · NQZ")
-                .setMessage("Рейстер мен броньдар осы оқу жобасына арналған. Нақты рейстерді ресми таблодан қараңыз.")
-                .setPositiveButton("Жабу", null).show();
+            else if (item.getItemId() == R.id.menu_about) open(AboutActivity.class);
             return true;
         });
         popup.show();

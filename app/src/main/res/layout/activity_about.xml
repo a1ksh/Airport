@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/page_root" style="@style/Page"
+    android:orientation="vertical" android:baselineAligned="false">
+    <LinearLayout style="@style/Row">
+        <Button android:id="@id/back" style="@style/IconButton"
+            android:text="@string/activity_admin_back_text"
+            android:contentDescription="@string/activity_admin_back_contentDescription" />
+        <TextView style="@style/Title" android:layout_marginStart="12dp" android:text="@string/about_title" />
+    </LinearLayout>
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1" android:fillViewport="true">
+        <LinearLayout style="@style/Column" android:paddingBottom="12dp">
+            <FrameLayout android:id="@id/airport_banner" android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginTop="12dp" android:background="@drawable/route_banner">
+                <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:scaleType="centerCrop" android:src="@drawable/airport_sunrise"
+                    android:importantForAccessibility="no" />
+                <View android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:background="@drawable/flight_deck_scrim" />
+                <LinearLayout style="@style/Column" android:layout_gravity="bottom" android:padding="16dp">
+                    <TextView style="@style/Title" android:textColor="@android:color/white" android:text="@string/app_name" />
+                    <TextView style="@style/Body" android:textColor="@android:color/white" android:text="@string/about_project_type" />
+                </LinearLayout>
+            </FrameLayout>
+            <LinearLayout style="@style/Card">
+                <TextView style="@style/Heading" android:text="@string/about_address_heading" />
+                <TextView style="@style/Body" android:layout_marginTop="8dp"
+                    android:textColor="@color/ink" android:text="@string/about_airport_name" />
+                <TextView style="@style/Body" android:textIsSelectable="true"
+                    android:layout_marginTop="3dp" android:text="@string/about_airport_address" />
+                <LinearLayout style="@style/Row" android:baselineAligned="false" android:layout_marginTop="12dp">
+                    <Button android:id="@+id/about_view_map" style="@style/Primary"
+                        android:layout_width="0dp" android:layout_weight="1" android:text="@string/about_view_map" />
+                    <Button android:id="@+id/about_route" style="@style/Secondary" android:layout_marginStart="8dp"
+                        android:layout_width="0dp" android:layout_weight="1" android:text="@string/about_route" />
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout style="@style/Card">
+                <TextView style="@style/Heading" android:text="@string/about_project_heading" />
+                <TextView style="@style/Body" android:layout_marginTop="8dp" android:text="@string/about_project_description" />
+                <TextView style="@style/Body" android:layout_marginTop="8dp" android:text="@string/about_demo" />
+            </LinearLayout>
+            <LinearLayout style="@style/Card">
+                <TextView style="@style/Heading" android:text="@string/about_team_heading" />
+                <TextView style="@style/Body" android:layout_marginTop="8dp" android:textColor="@color/ink"
+                    android:text="@string/about_authors" />
+                <TextView style="@style/Body" android:layout_marginTop="8dp" android:text="@string/about_university" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

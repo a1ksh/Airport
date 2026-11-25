@@ -2,5 +2,5 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/menu_map" android:title="@string/home_menu_menu_map_title" />
     <item android:id="@+id/menu_board" android:title="@string/home_menu_menu_board_title" />
-    <item android:id="@+id/menu_about" android:title="@string/home_menu_menu_about_title" />
+    <item android:id="@+id/menu_about" android:title="@string/about_title" />
 </menu>
