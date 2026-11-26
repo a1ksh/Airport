@@ -1,9 +1,13 @@
 package kz.edu.airportcourse.ui;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -21,24 +25,34 @@ import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import kz.edu.airportcourse.R;
 
 /** The launcher uses the same accounts, sessions and role-specific screens as the website. */
 public final class SharedAirportActivity extends ComponentActivity {
+    private static final String EMULATOR_SERVER = "http://10.0.2.2:8765";
     private WebView web;
     private String origin;
     private boolean failed;
+    private Runnable retryLocalConnection;
+    private final ActivityResultLauncher<String> localNetwork = registerForActivityResult(
+        new ActivityResultContracts.RequestPermission(), granted -> {
+            Runnable retry = retryLocalConnection;
+            retryLocalConnection = null;
+            if (granted && retry != null) retry.run();
+            else if (!granted) Toast.makeText(this, R.string.shared_local_denied, Toast.LENGTH_LONG).show();
+        });
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override protected void onCreate(Bundle state) {
@@ -83,16 +97,19 @@ public final class SharedAirportActivity extends ComponentActivity {
         web.loadUrl(origin.equals(canonicalOrigin(previous, false)) ? previous : origin + "/");
     }
 
-    private static String canonicalOrigin(String input, boolean rootOnly) {
+    private String canonicalOrigin(String input, boolean rootOnly) {
         if (input == null) return null;
         try {
             URI uri = URI.create(input);
             String host = uri.getHost();
             int port = uri.getPort();
-            if (!"https".equalsIgnoreCase(uri.getScheme()) || host == null || uri.getRawUserInfo() != null
+            boolean emulatorServer = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0
+                    && "http".equalsIgnoreCase(uri.getScheme()) && "10.0.2.2".equals(host) && port == 8765;
+            if ((!emulatorServer && !"https".equalsIgnoreCase(uri.getScheme())) || host == null || uri.getRawUserInfo() != null
                     || port == 0 || port > 65535 || uri.getRawAuthority().endsWith(":")) return null;
             if (rootOnly && (uri.getRawQuery() != null || uri.getRawFragment() != null
                     || !(uri.getRawPath().isEmpty() || "/".equals(uri.getRawPath())))) return null;
+            if (emulatorServer) return EMULATOR_SERVER;
             return "https://" + host.toLowerCase(Locale.ROOT) + (port == -1 || port == 443 ? "" : ":" + port);
         } catch (IllegalArgumentException badUrl) {
             return null;
@@ -118,6 +135,12 @@ public final class SharedAirportActivity extends ComponentActivity {
                 input.setError(getString(R.string.shared_server_invalid));
                 return;
             }
+            if (candidate.equals(EMULATOR_SERVER) && Build.VERSION.SDK_INT >= 37
+                    && checkSelfPermission(Manifest.permission.ACCESS_LOCAL_NETWORK) != PackageManager.PERMISSION_GRANTED) {
+                retryLocalConnection = () -> { if (dialog.isShowing()) connect.performClick(); };
+                localNetwork.launch(Manifest.permission.ACCESS_LOCAL_NETWORK);
+                return;
+            }
             connect.setEnabled(false);
             input.setEnabled(false);
             new Thread(() -> {
@@ -141,9 +164,9 @@ public final class SharedAirportActivity extends ComponentActivity {
 
     /** Probe only the public health endpoint, with no session or credentials. */
     private static boolean checkAirport(String candidate) {
-        HttpsURLConnection connection = null;
+        HttpURLConnection connection = null;
         try {
-            connection = (HttpsURLConnection) URI.create(candidate + "/health").toURL().openConnection();
+            connection = (HttpURLConnection) URI.create(candidate + "/health").toURL().openConnection();
             connection.setConnectTimeout(8000);
             connection.setReadTimeout(8000);
             connection.setInstanceFollowRedirects(false);

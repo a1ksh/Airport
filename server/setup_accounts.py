@@ -22,13 +22,14 @@ def main():
             if existing:
                 if existing["role"] != role:
                     raise RuntimeError(f"{email} already belongs to a different role.")
-                ids[role] = existing["id"]
+                ids[email] = existing["id"]
                 continue
             password = secrets.token_urlsafe(20)
-            ids[role] = data.create_account(db, name, email, password, role)
+            airline = (2 if email == "flyarystan@airport.test" else 1) if role == "operator" else None
+            ids[email] = data.create_account(db, name, email, password, role, airline)
             created.append((email, password))
         if fresh_course:
-            seed_demo_passport(db, ids["passenger"], ids["operator"])
+            seed_demo_passport(db, ids["user@airport.test"], ids["operator@airport.test"])
     if not created:
         print("The staff accounts are already configured.")
         return

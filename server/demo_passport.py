@@ -25,7 +25,7 @@ def seed_demo_passport(db, passenger_id, operator_id):
             ).fetchone():
                 break
         flight_id = db.execute(
-            "INSERT INTO flights(number,city,gate,time,direction,status) VALUES (?,?,?,?,0,0)",
+            "INSERT INTO flights(number,city,gate,time,direction,status,airline_id,duration_min) VALUES (?,?,?,?,0,0,1,300)",
             (number, city, gate, departed),
         ).lastrowid
         db.execute(

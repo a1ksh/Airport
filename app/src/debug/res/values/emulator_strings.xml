@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shared_server_help">Сервердің HTTPS мекенжайын енгізіңіз. Android Studio эмуляторында жергілікті сервер үшін http://10.0.2.2:8765 қолданыңыз.</string>
+    <string name="shared_server_invalid">Сервердің толық мекенжайын енгізіңіз.</string>
+</resources>

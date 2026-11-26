@@ -8,11 +8,11 @@ The app interface is in Kazakh. Navigation labels below describe the correspondi
 
 | Role | Features |
 | --- | --- |
-| Passenger | Search and save flights, select a seat, book a trip, open a QR boarding pass, manage a preparation checklist, browse trip history, receive flight notices, contact support, submit star ratings and collect travel passport stamps. |
-| Operator | Add and edit flights, update gates, times and statuses, view passenger manifests, check passengers in, confirm completed trips, reply to support requests and inspect their own activity log. |
-| Administrator | Search and filter accounts, block or reactivate eligible accounts, create operators, read support requests, review ratings and statistics, and inspect staff activity logs. |
+| Passenger | Compare direct and one-stop tickets, choose fares and seats, pay in tenge from a demo wallet, see QR passes for each leg and request a refund. Completed flights unlock reviews, passport stamps and frequent-flyer discounts. |
+| Operator | Manage their airline's flights, prices, gates, flight durations and check-in windows. See its manifests and support requests, check in passengers and confirm arrivals. |
+| Administrator | Oversee all airlines, flights, manifests, payments and refunds. Add an airline with its first operator, assign additional operators, publish ticket types, manage accounts and review feedback. |
 
-Additional features include current weather and a five-day forecast, airport directions in Google Maps, an external official flight board, a travel guide, two videos and an animated globe.
+The app also has an airborne flight board with aircraft registration and callsign search, directions between cities and Astana's two terminals, weather forecasts, a travel guide and two videos.
 
 **About** (Біз туралы) lists the project team and the address of Astana International Airport. **View on map** opens the airport in Google Maps. **Get directions** uses the same destination and lets the user choose a starting point. The Android launcher includes this screen before a server is configured. On the website, visitors can open it from the sign-in page or directly at `/#about`.
 
@@ -22,7 +22,7 @@ Additional features include current weather and a five-day forecast, airport dir
 2. Open the project root in **Android Studio**: the folder containing `settings.gradle` and this README.
 3. Install **Android SDK Platform 37** and let Gradle sync finish. The project configures **JDK 25 for the Gradle daemon**; application Java source and target compatibility are **Java 17**.
 4. Select an emulator such as **Medium Phone**, or connect an Android device running **Android 8.0 / API 26 or later**.
-5. Select the **app** run configuration and press **Run**. On first launch, tap **Сервер** and enter the HTTPS address for your Airport server. For your own installation, follow the [server setup guide](server/README.md).
+5. Start the FastAPI server and run the **app** configuration. Tap **Сервер** and enter its HTTPS address. For a debug build in Android Studio's emulator, use `http://10.0.2.2:8765` to reach the server on your computer. [Server setup guide](server/README.md)
 
 To use the same data on another device, open the same HTTPS address in Safari or a desktop browser and sign in. If the address changes, enter the new address in **Сервер** and tap **Қосылу**. The app checks the server’s `/health` endpoint and remembers the validated address on that device. An updated installation preserves the old device database. Accounts that exist only in that database require a separate migration to become available on the server.
 
@@ -65,6 +65,7 @@ Enter an email address and password on the login screen. The public passenger de
 | --- | --- | --- |
 | Passenger | Қарлығаш | `user@airport.test` |
 | Operator | Бейбарс | `operator@airport.test` |
+| FlyArystan operator | FlyArystan операторы | `flyarystan@airport.test` |
 | Administrator | Ерасыл | `admin@airport.test` |
 
 New users can register a passenger account. The profile screen supports changing a display name and, for personal accounts, changing a password. The public demonstration passenger password is protected.
@@ -78,17 +79,20 @@ Use the same server address on all devices. For a cross-device demonstration, op
 1. Sign in as the passenger. Open **Messages → New request** and send a support question.
 2. In the operator’s browser, open the request, write a reply and update its status if needed. The messages button displays an unread count.
 3. On Android, read the reply in the same conversation. Its unread indicator clears after reading.
-4. Open **Flight search**, choose a date and inspect a flight. Save it for later, or choose an available seat and book it. Open the QR boarding pass and mark items in the preparation checklist. Past and cancelled flights appear in separate trip views.
-5. As the operator, open a flight's passenger list or enter a booking code to check a passenger in. Changing a gate, time or flight status creates notices for booked passengers with flight alerts enabled.
-6. As the administrator, open account management to search, filter, block or reactivate eligible accounts, or add an operator. Administrator accounts are protected from blocking.
-7. As the passenger, open **Reviews → Leave a review**, select 1–5 stars and enter 1–2000 characters. Each submission creates a separate review. The administrator can read all reviews and inspect the average rating and rating distribution.
-8. Open weather, Maps directions, the official flight board or the travel guide. In the media section, play a video or open the globe animation from the shared server.
+4. Open **Билет іздеу**, choose **Астана → Ыстанбұл** for tomorrow, and compare the direct trip with a connection in Алматы. Sort by price, departure or travel time. Schedules and check-in times use Astana time (UTC+5).
+5. Pick a fare and a seat on each leg. Confirm the demo-wallet payment. **Сапарлар** shows the ticket, payment receipt and a separate QR code for each flight. **Билетті қайтару** previews the refund before releasing the seats. Returned tickets stay in the history.
+6. As the airline operator, edit a flight's schedule and check-in window. Passengers with flight alerts enabled receive the new times. Check a passenger in during that window and confirm the completed flight after its arrival.
+7. Open **Пікірлер** after a confirmed flight to rate it once. For a quick demonstration the initial passenger already has two confirmed trips. Three completed flights earn 5% off future tickets and ten earn 10%. **Профиль** shows the discount and wallet balance.
+8. As administrator, open **Компаниялар, тарифтер және төлемдер** to add an airline with its first operator, add a fare with baggage and refund terms, or view payments and refunds across airlines.
+9. Use **Жол бағыты** for station-to-terminal, T1–T2 or custom city/address directions. **Қазір әуеде** shows live observations around the selected airport or looks up a commercial aircraft by tail number or callsign. The official airport board is linked from this screen.
+
+Each passenger starts with 1,000,000 demo tenge. Prices and fare rules are classroom examples. Payment and refund entries stay in the project's SQLite database. The ticket flow accepts no card details. If the airline cancels a flight or a schedule change breaks the connection, unused affected tickets qualify for a full refund of their paid amount.
 
 ## My Travel Passport
 
 Open **Profile → My Travel Passport** to view confirmed trip totals, city stamps and visited-country counts. Tap a city stamp to see its trip dates, flight numbers, booking codes and seats. Repeated visits increase the trip count for that city. Cities with an unknown country do not add an invented country to the total.
 
-To award a stamp, the operator opens **Flights → Flight → Passengers**, selects a checked-in passenger and confirms **Complete trip**. The flight must be a departing flight, its departure time must have passed, and it must not be cancelled. Confirming the same trip again does not create another stamp.
+To award a stamp, the operator opens **Flights → Flight → Passengers**, selects a checked-in passenger and confirms **Complete trip** after scheduled arrival. Each completed flight earns one stamp for its destination.
 
 The `travel_stamps` table stores a snapshot of the city, flight, departure time, seat and booking code. Later flight edits preserve that confirmed travel history. The passport endpoint groups stamps by city. Each passenger can access only their own passport. New accounts start with an explanatory empty state.
 
@@ -120,11 +124,12 @@ The shared FastAPI service owns one SQLite database for every client connected t
 
 | Area | Tables |
 | --- | --- |
+| Airlines and ticket sales | `airlines`, `fares`, `orders` |
 | Accounts and flights | `users`, `flights` |
 | Trips and saved flights | `bookings`, `saved_flights`, `travel_stamps` |
 | Support conversations | `tickets`, `messages`, `reads` |
 | Feedback and notifications | `reviews`, `notices` |
-| Activity and demo scheduling | `ops_log`, `demo_days` |
+| Activity and demo scheduling | `ops_log`, `market_days`, earlier `demo_days` |
 | Sessions | `sessions` |
 
 Earlier Android installations used **`airport_course.db`**, schema version **6**, for device-local data. The shared launcher reads and writes records through the server, including when installed as an update on those devices.
@@ -148,5 +153,8 @@ Both videos were checked for playback, pause, resume and stop behavior. Fourteen
 ## References
 
 - [Open-Meteo weather API](https://open-meteo.com/en/docs)
+- [adsb.lol open flight data API](https://www.adsb.lol/docs/open-data/api)
+- [Astana Airport terminal and check-in information](https://www.nn-airport.kz/pages/check-in_procedures)
+- [Google Maps directions URLs](https://developers.google.com/maps/documentation/urls/get-started)
 - [Android SQLiteOpenHelper](https://developer.android.com/reference/android/database/sqlite/SQLiteOpenHelper)
 - [Android Intents](https://developer.android.com/guide/components/intents-common)

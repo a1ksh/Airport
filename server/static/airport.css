@@ -98,10 +98,7 @@ input[type=checkbox]{inline-size:19px;block-size:19px;accent-color:var(--blue)}
 .rule{border:0;border-top:1px dashed #b6c9df;margin:9px 0}
 .item .sub,.item .meta{margin-top:3px}
 .neutral{padding:12px;color:var(--muted);font-size:14px}
-.occupied{background:#e4e8ed!important;color:#526070!important}
 .seats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) 10px repeat(3,minmax(0,1fr));gap:5px}
-.seats button{padding:5px;font-variant-numeric:tabular-nums;font-size:13px}
-.seats button.selected{background:var(--blue);color:white}
 .pass{text-align:center}
 .pass .route{text-align:start}
 .pass .qr{display:block;width:156px;height:156px;margin:10px auto 2px}
@@ -189,6 +186,42 @@ dialog::backdrop{background:#06172e8e}
 .passport-first-stamp{display:grid;place-items:center;width:100px;height:100px;border:2px dashed #96bce8;outline:1px solid #d3e4f8;outline-offset:-7px;border-radius:50%;background:#f1f7fe;color:#417dbd}
 .passport-first-stamp .ic{width:35px;height:35px}
 [hidden]{display:none!important}
+.market-layout,.offer-list{display:grid;gap:12px;align-content:start}
+.market-layout .sectionbar{margin:0}
+.finder-form{align-content:start}
+.route-inputs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:5px;align-items:end}
+.route-inputs .swap{font-size:19px;padding:4px;min-width:36px}
+.market-layout .field select{width:100%;min-width:0}
+.offer{display:grid;gap:12px;padding:17px}
+.journey-times,.leg-times{display:grid;grid-template-columns:minmax(0,1fr) minmax(56px,.8fr) minmax(0,1fr);align-items:center;gap:9px}
+.journey-times>div:last-child,.leg-times>span:last-child{text-align:right}
+.journey-times b,.wallet-balance{font-size:25px;font-weight:730;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.journey-times small,.leg-times b,.leg-times small,.offer-foot small,.offer-foot strong,.fare-choice small{display:block}
+.leg-times{margin:8px 0;font-variant-numeric:tabular-nums}
+.leg-times b{font-size:15px}
+.journey-line{text-align:center;color:var(--blue)}
+.journey-line small,.fare-choice small,.offer-foot small{font-size:12px}
+.journey-line i{display:block;height:1px;background:var(--line);margin:7px 0;position:relative}
+.journey-line i::before,.journey-line i::after{content:"";position:absolute;top:-2px;border:1px solid #7996b6;border-radius:50%;width:5px;height:5px;background:white}
+.journey-line i::before{left:0}.journey-line i::after{right:0}
+.offer-foot{border-top:1px dashed var(--line);padding-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.offer-foot strong{font-size:20px}.offer-foot strong small{display:inline;font-weight:500}
+fieldset.card{margin:0;min-width:0}
+fieldset.card legend{font-size:16px;font-weight:680;padding:0 5px}
+.fare-choice{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:9px;padding:10px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.fare-choice:has(input:checked){background:var(--soft);border-color:var(--blue)}
+.fare-choice input{accent-color:var(--blue)}.fare-choice b{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:14px}
+.seat-option{position:relative;display:block;cursor:pointer}
+.seat-option input{position:absolute;inset:0;opacity:0;margin:0;cursor:inherit}
+.seat-option span{display:grid;place-items:center;min-height:40px;color:var(--blue);background:var(--soft);border:1px solid var(--line);border-radius:9px;font-weight:650;font-size:13px}
+.seat-option input:checked+span{background:var(--blue);color:white}
+.seat-option input:disabled+span{color:#637185;background:#ebeff3;text-decoration:line-through}
+.seat-option input:focus-visible+span{outline:3px solid #438ce3}
+.receipt-lines{display:grid;gap:8px}
+.receipt-lines>div{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.receipt-lines span{color:var(--muted);font-size:14px}.receipt-lines b{text-align:right}
+.receipt-lines>div:last-child{border-top:1px dashed var(--line);padding-top:8px}
+@media(min-width:800px){#app.market-page{max-width:960px}.market-layout{grid-template-columns:minmax(270px,.85fr) minmax(0,1.4fr);align-items:start;gap:22px}.finder-form{position:sticky;top:18px}}
 @media(max-width:345px){#app{padding-left:12px;padding-right:12px}.login-hero h1{font-size:37px}.hero{padding:14px}.nav{width:calc(100% - 24px)}.grid3 .btn,.passenger-hero .btn{padding-inline:7px;font-size:13px}.weather-tile{gap:6px;padding:7px}.weather-tile-icon{width:26px;height:29px}.media-card-title{font-size:12px}}
 @media(min-width:680px){#app{padding-top:20px}}
 @media(min-width:760px){

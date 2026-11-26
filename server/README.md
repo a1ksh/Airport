@@ -19,12 +19,13 @@ Open [Airport on this computer](http://localhost:8765/) or go directly to [About
 
 The public demo passenger signs in with `user@airport.test` and the shared demo password `Airport123`. Use a separately registered passenger account for personal bookings. The shared passenger password is fixed.
 
-`setup_accounts.py` creates the two staff accounts. Each receives a unique randomly generated password, displayed once in the local terminal. Save these passwords privately. Staff can change theirs in Profile. Running setup again preserves existing accounts, passwords and data.
+`setup_accounts.py` creates the administrator and an operator for each demo airline. Each receives a unique randomly generated password, displayed once in the local terminal. Save these passwords privately. Staff can change theirs in Profile. Running setup again preserves existing accounts, passwords and data.
 
 | Role | Name | Sign-in email |
 | --- | --- | --- |
 | Passenger | Қарлығаш | `user@airport.test` |
 | Operator | Бейбарс | `operator@airport.test` |
+| FlyArystan operator | FlyArystan операторы | `flyarystan@airport.test` |
 | Administrator | Ерасыл | `admin@airport.test` |
 
 Other passengers can register from the sign-in page. The administrator can add operators from the account management screen. The initial database includes sample flights. On a fresh installation, the demo passenger's travel passport also shows two completed international trips. Other passengers start with an empty passport and earn a stamp when an operator confirms a completed trip.
@@ -32,6 +33,8 @@ Other passengers can register from the sign-in page. The administrator can add o
 The default database is `data/airport.sqlite3`. To use a different path, set `AIRPORT_WEB_DB` to the same absolute database path for both the account setup and server commands. A fresh checkout creates its own database.
 
 ## Connect a phone
+
+**Android Studio emulator.** With the server running on port 8765, enter `http://10.0.2.2:8765` in **Сервер** in the debug APK. On Android 17 and newer, allow local network access when prompted for this connection. A physical Android device uses the HTTPS setup below.
 
 **Safari on the same Wi-Fi.** Start Uvicorn with `--host 0.0.0.0` instead of `--host 127.0.0.1`. Open `http://<computer-LAN-IP>:8765/` on your phone. The computer's firewall must allow this connection on your private network.
 
@@ -56,7 +59,24 @@ Open the tunnel URL in Safari, or enter its base HTTPS address in the Android ap
 | Path | Purpose |
 | --- | --- |
 | `server.py` | FastAPI routes, sessions, role checks and same-origin access |
-| `airport_data.py`, `schema.sql` | Database setup, flight schedule, queries and transactions |
+| `airport_data.py`, `schema.sql`, `migrations/` | Database setup, transactional upgrades, schedules and role-scoped queries |
+| `sales.py` | Direct/connecting itineraries, fare quotes, atomic demo payments and refunds |
+| `live_flights.py` | Cached airborne observations by airport, registration or callsign from adsb.lol |
 | `weather.py` | City lookup and weather forecasts from Open-Meteo |
 | `static/` | Web interface, styles, photographs and videos |
-| `setup_accounts.py` | Local provisioning of the two staff accounts |
+| `setup_accounts.py` | Local provisioning of demo staff accounts |
+
+## Updating an existing installation
+
+Pull the new revision, stop the old server, then run `setup_accounts.py` and restart Uvicorn using the existing `AIRPORT_WEB_DB` path. Startup migrates the schema in one transaction. Existing bookings keep their seats, codes and QR passes. Earlier bookings carry no payment charge. Existing operators, flights and support requests are assigned to Air Astana. Account setup provisions the FlyArystan operator on an upgraded server.
+
+The demo schedule covers today and the next five days. A transfer requires 60–360 minutes between arrival and the next departure. The sales API recalculates prices, checks every seat and debits the wallet together. Repeating the same checkout or refund preserves the original transaction. The live board uses adsb.lol without a key. Receiver coverage varies by airport. A missing signal and a provider outage have separate screen states.
+
+## Run the ticketing regression tests
+
+From the server folder, use the same Python environment as the server.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install httpx
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```

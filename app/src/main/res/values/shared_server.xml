@@ -11,4 +11,5 @@
     <string name="shared_server_offline">Серверге қосылу мүмкін болмады</string>
     <string name="shared_server_retry_help">Интернетті тексеріңіз. Сервердің сілтемесі өзгерсе, жоғарыдағы «Сервер» батырмасын басыңыз.</string>
     <string name="shared_server_external_missing">Сілтемені ашатын қолданба табылмады.</string>
+    <string name="shared_local_denied">Эмулятордағы жергілікті серверге қосылу үшін жақын құрылғыларға рұқсат беріңіз.</string>
 </resources>
