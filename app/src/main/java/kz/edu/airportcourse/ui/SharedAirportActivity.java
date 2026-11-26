@@ -43,6 +43,7 @@ import kz.edu.airportcourse.R;
 public final class SharedAirportActivity extends ComponentActivity {
     private static final String EMULATOR_SERVER = "http://10.0.2.2:8765";
     private WebView web;
+    private TicketSaver ticketSaver;
     private String origin;
     private boolean failed;
     private Runnable retryLocalConnection;
@@ -57,6 +58,7 @@ public final class SharedAirportActivity extends ComponentActivity {
     @SuppressLint("SetJavaScriptEnabled")
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
+        ticketSaver = new TicketSaver(this, state);
         setContentView(R.layout.activity_shared_airport);
         origin = canonicalOrigin(getPreferences(MODE_PRIVATE).getString("origin", null), true);
         if (origin == null) origin = canonicalOrigin(getString(R.string.shared_server_url), true);
@@ -194,7 +196,11 @@ public final class SharedAirportActivity extends ComponentActivity {
     private final class ServerClient extends WebViewClient {
         @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             String target = canonicalOrigin(request.getUrl().toString(), false);
-            if (origin != null && origin.equals(target)) return false;
+            if (origin != null && origin.equals(target)) {
+                if (request.isForMainFrame() && request.hasGesture() && "GET".equals(request.getMethod())
+                        && ticketSaver.open(request.getUrl())) return true;
+                return false;
+            }
             if (target != null && request.isForMainFrame() && request.hasGesture()) {
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW, request.getUrl()).addCategory(Intent.CATEGORY_BROWSABLE));
@@ -240,6 +246,7 @@ public final class SharedAirportActivity extends ComponentActivity {
 
     @Override protected void onSaveInstanceState(@NonNull Bundle state) {
         super.onSaveInstanceState(state);
+        ticketSaver.saveState(state);
         state.putString("page", web.getUrl());
     }
 

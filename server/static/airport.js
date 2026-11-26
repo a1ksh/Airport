@@ -10,6 +10,7 @@ const tasks = ["Ұшу құжаттарын дайындадым","Багаж ш
 const airportName = "Нұрсұлтан Назарбаев халықаралық әуежайы";
 const airportAddress = "Астана, Қабанбай батыр даңғылы, 119";
 const official = "https://www.nn-airport.kz/flights";
+const liveMap = "https://adsb.lol/?lat=48.5&lon=67.5&zoom=4";
 const mediaPath = "/static/media/";
 const clips = {
   travel: {file:"travel-story", title:"Саяхат картасы", time:"0:19",
@@ -35,7 +36,6 @@ const icons = {
   film:"M3 5h18v14H3zM7 5v14m10-14v14M3 10h4m-4 4h4m10-4h4m-4 4h4",
 };
 let user = null;
-let signInReturn = "";
 let routeVersion = 0;
 let dashboard = {};
 let watchedView = null;
@@ -49,7 +49,8 @@ const esc = (value = "") => String(value ?? "").replace(/[&<>"']/g, char => ({"&
 const ice = (name) => '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="' + icons[name] + '"/></svg>';
 const link = (to, label, style = "") => '<a class="btn ' + style + '" href="#' + esc(to) + '">' + label + '</a>';
 const button = (action, label, value = "", style = "") => '<button class="btn ' + style + '" type="button" data-action="' + esc(action) + '" data-value="' + esc(value) + '">' + label + '</button>';
-const external = (url, label) => '<a class="btn" target="_blank" rel="noopener" href="' + url + '">' + label + '</a>';
+const external = (url, label) => '<a class="btn" target="_blank" rel="noopener" href="' + esc(url) + '">' + label + '</a>';
+const liveMapLink = () => external(liveMap, ice("plane") + " Қазір әуеде ↗");
 const blank = (text) => '<div class="card neutral">' + esc(text) + '</div>';
 const clipRoute = (key) => key === "travel" ? "media" : "media?clip=" + key;
 const orbitArt = (alt = "") => '<picture class="orbit-art"><source type="image/webp" srcset="' + mediaPath + 'orbit.webp">'
@@ -326,7 +327,7 @@ function homePage(version) {
     const nextTrip = '<div class="sectionbar"><h2>Келесі сапар</h2>' + link("flights?saved=1",ice("saved") + " Сақталған","text") + '</div>'
       + (next ? tripCard(next) : rowLink("search",'<h3>Әзірге сапар жоспарланбаған</h3><hr class="rule"><p class="meta">Билет іздеу →</p>'));
     const services = '<h2 class="section">Әуежай қызметтері</h2><div class="card services">'
-      + link("directions",ice("map") + " Жол бағыты") + link("live",ice("plane") + " Қазір әуеде")
+      + link("directions",ice("map") + " Жол бағыты") + liveMapLink()
       + link("guide",ice("guide") + " Жолға кеңес") + link("tickets",ice("chat") + " Қолдау") + '</div>';
     page(header + '<div class="dashboard-grid"><div class="dashboard-main">' + (passenger ? hero : staff)
       + '<div class="grid2 weather-strip">' + weatherTile("weather-astana","Астана","Астана")
@@ -461,6 +462,7 @@ function tripsPage(archive, version) {
 }
 
 function tripPage(code, version) {
+  page(title("Менің билетім","trips") + '<p class="loading">Билет жүктелуде…</p>',"trips");
   return watchView(version, "trips/" + enc(code), trip => {
     const label = trip.cancelled ? "Қайтарылды" : trip.status === 3 ? "Рейс тоқтатылды" : trip.completed ? "Сапар аяқталды"
       : trip.checked ? "Тіркелді" : upcoming(trip) ? "Расталған бронь" : "Уақыты өтті";
@@ -480,6 +482,7 @@ function tripPage(code, version) {
       + '<p class="meta">Астана уақыты (UTC+5)' + (trip.seat ? " · Орын " + esc(trip.seat) : "") + '</p>' + checkinClock(trip) + '<hr class="rule">'
       + (trip.cancelled || trip.status === 3 ? "" : '<img class="qr" src="/api/trips/' + enc(code) + '/qr.svg" alt="Броньның QR коды">')
       + '<strong class="code">' + esc(code) + '</strong></section>' + receipt
+      + (trip.cancelled || trip.status === 3 ? "" : '<a class="btn full" href="/api/trips/' + enc(code) + '/ticket.pdf">Билетті PDF ретінде сақтау</a>')
       + (upcoming(trip) ? link("checklist/" + enc(code),"Ұшуға дайындық · " + countTasks(trip.trip_tasks) + "/4","full") : "")
       + (trip.terminal ? link(href("directions",{destination:trip.terminal}),ice("map") + " " + terminalName(trip.terminal),"full") : "")
       + link(href("weather",{city:trip.destination}),ice("sun") + " " + esc(trip.destination) + " · Ауа райы","full")
@@ -813,6 +816,12 @@ async function render() {
   const params = new URLSearchParams(search);
   window.scrollTo(0,0);
   if (dialog.open) dialog.close("cancel");
+  if (screen === "live") {
+    // Saved links from the old board also work without an Airport session.
+    page(title("Қазір әуеде") + liveMapLink(),"home");
+    location.replace(liveMap);
+    return;
+  }
   if (screen === "about") return aboutPage(params);
   if (screen === "directions") {
     page(title("Жол бағыты",user ? "home" : "about") + '<div id="airport-route"></div>',"home","wayfinding-page");
@@ -824,7 +833,6 @@ async function render() {
     return;
   }
   if (!user) {
-    if (screen === "live") signInReturn = location.hash.slice(1);
     loginPage(screen === "register");
     return;
   }
@@ -836,7 +844,6 @@ async function render() {
       case "search": if (user.role === "passenger") return await finderPage(params,version); break;
       case "checkout": if (user.role === "passenger") return await checkoutPage(params.get("legs"),params.get("back"),version); break;
       case "payment": if (user.role === "passenger" && /^AP-[A-F0-9]{16}$/.test(raw)) return await paymentPage(raw,version); break;
-      case "live": return await livePage(params,version);
       case "sales-admin": if (user.role === "admin") return await salesAdmin(params,version); break;
       case "airline-new": if (user.role === "admin") return airlineEditor(); break;
       case "fare-new": if (user.role === "admin") return fareEditor(); break;
@@ -900,7 +907,6 @@ app.addEventListener("click", async event => {
       case "logout":
         await api("logout","POST");
         user = null;
-        signInReturn = "";
         dashboard = {};
         go("login");
         break;
@@ -1017,8 +1023,7 @@ app.addEventListener("submit", async event => {
     switch (action) {
       case "register": case "login":
         user = await api(action,"POST",values);
-        go(signInReturn || "home");
-        signInReturn = "";
+        go("home");
         break;
       case "search-flights": case "filter-accounts":
         go(href(action === "search-flights" ? "flights" : "accounts",Object.fromEntries(
@@ -1047,7 +1052,6 @@ app.addEventListener("submit", async event => {
         go("trip/" + result.code);
         break;
       }
-      case "live-search": go(href("live",values)); break;
       case "airline-new":
         await api("admin/airlines","POST",{name:values.name,code:values.code,operator:{name:values.operator_name,email:values.email,password:values.password}});
         go("sales-admin");

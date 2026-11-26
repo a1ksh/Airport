@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field
 import airport_data as data
 import sales
 from live_flights import live_board
+from ticket_pdf import ticket_pdf
 from weather import get_forecast
 
 SESSION = "airport_web_session"
@@ -541,12 +542,25 @@ def checklist(code: str, entry: Checklist, who=Depends(signed_in), db=Depends(da
     return {"ok": True}
 
 
-@app.get("/api/trips/{code}/qr.svg")
-def boarding_qr(code: str, who=Depends(signed_in), db=Depends(data.database)):
+def printable_trip(db, who, code):
     row = trip(db, who, code)
     if row["cancelled"] or row["status"] == 3:
         fail("Қайтарылған немесе тоқтатылған билетке талон берілмейді.", 409)
+    return row
+
+
+@app.get("/api/trips/{code}/qr.svg")
+def boarding_qr(code: str, who=Depends(signed_in), db=Depends(data.database)):
+    row = printable_trip(db, who, code)
     return qr_image(row["code"])
+
+
+@app.get("/api/trips/{code}/ticket.pdf")
+def download_ticket(code: str, who=Depends(signed_in), db=Depends(data.database)):
+    row = printable_trip(db, who, code)
+    filename = "Airport-" + re.sub(r"[^a-zA-Z0-9-]", "_", row["code"]) + ".pdf"
+    return Response(ticket_pdf(data.flight_json(row), who["name"]), media_type="application/pdf",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
 
 
 def qr_image(value):

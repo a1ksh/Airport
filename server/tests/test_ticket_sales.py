@@ -111,6 +111,25 @@ class TicketSalesTests(unittest.TestCase):
         self.assertEqual(self.p.get(f"/api/flights/{first['id']}/seats").json()["occupied"], [])
         self.assertEqual(self.p.get("/api/trips").json(), [])
 
+    def test_offline_ticket_is_private_and_specific_to_each_paid_leg(self):
+        code = self.purchase(self.purchase_body(self.transfer))
+        legs = self.p.get("/api/trips/" + code).json()["legs"]
+        files = []
+        for leg in legs:
+            path = "/api/trips/" + leg["code"] + "/ticket.pdf"
+            download = self.p.get(path)
+            self.assertEqual(download.status_code, 200)
+            self.assertEqual(download.headers["content-type"], "application/pdf")
+            self.assertIn("Airport-" + leg["code"] + ".pdf", download.headers["content-disposition"])
+            self.assertTrue(download.content.startswith(b"%PDF-"))
+            self.assertEqual(self.other.get(path).status_code, 404)
+            self.assertEqual(self.op.get(path).status_code, 403)
+            files.append(download.content)
+        self.assertNotEqual(files[0], files[1])
+        self.refund(self.p, code)
+        for leg in legs:
+            self.assertEqual(self.p.get("/api/trips/" + leg["code"] + "/ticket.pdf").status_code, 409)
+
     def test_stale_price_and_duplicate_request_with_other_contents(self):
         body = self.purchase_body(self.direct)
         self.assertEqual(self.p.post("/api/checkout", json={**body, "expected_total": 1}).status_code, 409)

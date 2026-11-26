@@ -12,7 +12,7 @@ The app interface is in Kazakh. Navigation labels below describe the correspondi
 | Operator | Manage their airline's flights, prices, gates, flight durations and check-in windows. See its manifests and support requests, check in passengers and confirm arrivals. |
 | Administrator | Oversee all airlines, flights, manifests, payments and refunds. Add an airline with its first operator, assign additional operators, publish ticket types, manage accounts and review feedback. |
 
-The app also has an airborne flight board with aircraft registration and callsign search, directions between cities and Astana's two terminals, weather forecasts, a travel guide and two videos.
+The app links directly to a live aircraft map over Kazakhstan and includes directions between cities and Astana's two terminals, weather forecasts, a travel guide and two videos. Passengers can save a ticket for each leg as an offline PDF.
 
 **About** (Біз туралы) lists the project team and the address of Astana International Airport. **Мекенжайды көру** opens the real address in Google Maps. **Жол бағыты** opens the project's fictional interactive map. Guests can use the map at `/#directions` and from the Android launcher's About screen before connecting to a server.
 
@@ -84,7 +84,8 @@ Use the same server address on all devices. For a cross-device demonstration, op
 6. As the airline operator, edit a flight's schedule and check-in window. Passengers with flight alerts enabled receive the new times. Check a passenger in during that window and confirm the completed flight after its arrival.
 7. Open **Пікірлер** after a confirmed flight to rate it once. For a quick demonstration the initial passenger already has two confirmed trips. Three completed flights earn 5% off future tickets and ten earn 10%. **Профиль** shows the discount and wallet balance.
 8. As administrator, open **Компаниялар, тарифтер және төлемдер** to add an airline with its first operator, add a fare with baggage and refund terms, or view payments and refunds across airlines.
-9. Open **Жол бағыты**, tap two stops or use the selectors, and choose a bus, car or walking route. Try the intercity bus station to T1, or walk from T1 to T2. The highlighted route, distance and time use a fictional network. **Қазір әуеде** shows live observations from adsb.lol around the selected airport. Tap a current aircraft or look it up by registration or callsign. The ticket search uses the teaching timetable.
+9. Open **Жол бағыты**, tap two stops or use the selectors, and choose a bus, car or walking route. Try the intercity bus station to T1, or walk from T1 to T2. The highlighted route, distance and time use a fictional network. **Қазір әуеде** opens the ADSB.lol live map over Kazakhstan in the browser.
+10. In **Сапарлар**, open a ticket and choose **Билетті PDF ретінде сақтау**. The file contains that leg's route, departure, arrival, seat and QR code and opens offline. On Android choose a folder in the system file picker. Download a fresh copy if the airline changes the schedule or gate. The operator checks the booking's current status at check-in.
 
 Each passenger starts with 1,000,000 demo tenge. Prices and fare rules are classroom examples. Payment and refund entries stay in the project's SQLite database. The ticket flow accepts no card details. If the airline cancels a flight or a schedule change breaks the connection, unused affected tickets qualify for a full refund of their paid amount.
 
@@ -153,7 +154,7 @@ Both videos were checked for playback, pause, resume and stop behavior. Fourteen
 ## References
 
 - [Open-Meteo weather API](https://open-meteo.com/en/docs)
-- [adsb.lol open flight data API](https://www.adsb.lol/docs/open-data/api)
+- [ADSB.lol live aircraft map](https://adsb.lol/?lat=48.5&lon=67.5&zoom=4)
 - [Astana Airport terminal and check-in information](https://www.nn-airport.kz/pages/check-in_procedures)
 - [Google Maps directions URLs](https://developers.google.com/maps/documentation/urls/get-started)
 - [Android SQLiteOpenHelper](https://developer.android.com/reference/android/database/sqlite/SQLiteOpenHelper)

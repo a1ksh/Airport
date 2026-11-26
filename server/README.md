@@ -61,18 +61,21 @@ Open the tunnel URL in Safari, or enter its base HTTPS address in the Android ap
 | `server.py` | FastAPI routes, sessions, role checks and same-origin access |
 | `airport_data.py`, `schema.sql`, `migrations/` | Database setup, transactional upgrades, schedules and role-scoped queries |
 | `sales.py` | Direct/connecting itineraries, fare quotes, atomic demo payments and refunds |
-| `live_flights.py` | Cached airborne observations by airport, registration or callsign from adsb.lol |
+| `live_flights.py` | Cached observations for earlier clients using the live API |
+| `ticket_pdf.py` | Single-flight PDF with an embedded font and scannable booking code |
 | `weather.py` | City lookup and weather forecasts from Open-Meteo |
 | `static/` | Web interface, styles, photographs and videos |
 | `setup_accounts.py` | Local provisioning of demo staff accounts |
 
 ## Updating an existing installation
 
-Pull the new revision, stop the old server, then run `setup_accounts.py` and restart Uvicorn using the existing `AIRPORT_WEB_DB` path. Startup migrates the schema in one transaction. Existing bookings keep their seats, codes and QR passes. Earlier bookings carry no payment charge. Existing operators, flights and support requests are assigned to Air Astana. Account setup provisions the FlyArystan operator on an upgraded server.
+Pull the new revision and install `requirements.txt` in the server's virtual environment. Stop the old server, then run `setup_accounts.py` and restart Uvicorn using the existing `AIRPORT_WEB_DB` path. Startup migrates the schema in one transaction. Existing bookings keep their seats, codes and QR passes. Earlier bookings carry no payment charge. Existing operators, flights and support requests are assigned to Air Astana. Account setup provisions the FlyArystan operator on an upgraded server.
 
 The demo schedule covers today and the next five days. A transfer requires 60–360 minutes between arrival and the next departure. A pending payment expires in five minutes. On confirmation the API rechecks prices and seats, records the wallet, simulated card or QR payment and issues all tickets in one transaction. Repeating confirmation or refund preserves the original transaction. Card and QR refunds leave the demo wallet balance intact. Existing paid orders retain their wallet ledger and receive a receipt number.
 
-Passengers can rate their first purchase from the ticket or the reviews screen. Each operator-confirmed flight remains separately eligible for a flight review. The route map uses the same fictional city and terminal network on the website and in the offline Android About screen. The live board uses adsb.lol without a key. Receiver coverage varies by airport. A missing signal and a provider outage have separate screen states.
+Passengers can rate their first purchase from the ticket or the reviews screen. Each operator-confirmed flight remains separately eligible for a flight review. The route map uses the same fictional city and terminal network on the website and in the offline Android About screen. The dashboard opens ADSB.lol directly in the browser.
+
+The ticket PDF endpoint checks the passenger's session, ownership and cancellation status before generating the file. Noto Sans is embedded for Kazakh text. Its SIL Open Font License is included in `fonts/OFL.txt`.
 
 ## Run the ticketing regression tests
 

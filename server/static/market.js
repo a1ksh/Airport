@@ -133,41 +133,6 @@ function walletCard(stats) {
       : 'Ең жоғары жеңілдік қолданылады.') + '</p></section>';
 }
 
-
-
-async function livePage(params, version) {
-  const q = params.get("q") || "", mode = params.get("mode") || "registration";
-  const airport = params.get("airport") || "NQZ";
-  const airports = [["NQZ","Астана · NQZ"],["ALA","Алматы · ALA"],["IST","Ыстанбұл · IST"],["LHR","Лондон · LHR"]];
-  page(title("Қазір әуеде") + '<div class="stack"><form class="card fields" data-form="live-search">'
-    + selectField("Нөмір енгізілмесе, осы әуежай маңын көрсету","airport",airports,airport)
-    + selectField("Іздеу түрі","mode",[["registration","Борттың тіркеу нөмірі"],["flight","Рейс нөмірі немесе шақыру белгісі"]],mode)
-    + formField("Нөмір","q",'type="search" maxlength="16" placeholder="Нөмір немесе бос қалдырыңыз" value="' + esc(q) + '"')
-    + '<p class="meta">Бұл таблода нақты әуе кемелері көрсетіледі. Бортты тізімнен де таңдай аласыз.</p>'
-    + submit("Іздеу") + '</form><section class="stack" id="live-results"><p class="sub">Деректер жүктелуде…</p></section>'
-    + external(official,"Астана әуежайының ресми таблосы ↗") + '</div>',"home");
-  let result;
-  try {
-    result = await api(href("live",{q,mode,airport}));
-  } catch (error) {
-    if (version === routeVersion && !sessionExpired(error)) $("#live-results").innerHTML = blank(error.message) + button("refresh","Қайталау");
-    return;
-  }
-  if (version !== routeVersion) return;
-  $("#live-results").innerHTML = '<div class="row space wrap"><h2>' + (q ? esc(q) : esc(airport) + " маңындағы борттар") + '</h2>'
-    + '<span class="badge">' + result.aircraft.length + ' борт</span></div><p class="meta">adsb.lol · ' + stamp(result.observed)
-    + ' (UTC+5) · <a href="https://www.adsb.lol/docs/open-data/api" target="_blank" rel="noopener">ODbL</a></p>'
-    + (result.aircraft.map(a => {
-      const content = '<div class="row space"><div><h3>' + esc(a.callsign) + '</h3><p class="meta">'
-        + esc(a.registration || "Нөмірі белгісіз") + (a.type ? ' · ' + esc(a.type) : '') + '</p></div><span class="badge ok">Әуеде</span></div>';
-      return q ? '<article class="card">' + content + '</article>'
-        : rowLink(href("live",{airport,mode:a.registration ? "registration" : "flight",q:a.registration || a.callsign}),content);
-    }).join("") || blank("Қазір осы іздеу бойынша әуедегі борттан сигнал жоқ."))
-    + (q ? link(href("live",{airport}),"Маңайдағы борттарды көру")
-      : !result.aircraft.length && airport !== "IST" ? link(href("live",{airport:"IST"}),"Ыстанбұл маңын тексеру") : "")
-    + button("refresh","Жаңарту");
-}
-
 function salesAdmin(params, version) {
   const before = params.get("before");
   return watchView(version, [before ? href("admin/sales",{before}) : "admin/sales","catalog"], ([sales,catalog]) => {
