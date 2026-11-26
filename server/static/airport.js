@@ -3,7 +3,7 @@
 const app = document.querySelector("#app");
 const dialog = document.querySelector("#confirm");
 const roles = {passenger:"Жолаушы", operator:"Оператор", admin:"Әкімші"};
-const flightStates = ["Уақтылы","Кешігуде","Отырғызу","Тоқтатылды"];
+const flightStates = ["Уақытылы","Кешігуде","Отырғызу","Тоқтатылды"];
 const ticketStates = ["Жаңа","Қаралып жатыр","Шешілді"];
 const ratingLabels = ["", "Өте нашар", "Нашар", "Орташа", "Жақсы", "Керемет"];
 const tasks = ["Ұшу құжаттарын дайындадым","Багаж шарттарын тексердім","Әуежайға баратын жолды жоспарладым","Талонды сақтап қойдым"];
@@ -35,6 +35,7 @@ const icons = {
   film:"M3 5h18v14H3zM7 5v14m10-14v14M3 10h4m-4 4h4m10-4h4m-4 4h4",
 };
 let user = null;
+let signInReturn = "";
 let routeVersion = 0;
 let dashboard = {};
 let watchedView = null;
@@ -138,12 +139,12 @@ function updateChildren(parent, next) {
       if (before.data !== after.data) before.data = after.data;
     } else if (before.nodeType === Node.ELEMENT_NODE) {
       for (const name of before.getAttributeNames()) {
-        if (!after.hasAttribute(name)) before.removeAttribute(name);
+        if (!after.hasAttribute(name) && !(name === "open" && before.tagName === "DETAILS")) before.removeAttribute(name);
       }
       for (const {name, value} of after.attributes) {
         if (before.getAttribute(name) !== value) before.setAttribute(name, value);
       }
-      if (!before.matches('form[data-form="message"], form[data-form="review"], form[data-form="search-flights"], form[data-form="filter-accounts"]')) {
+      if (!before.matches('form[data-form="message"], form[data-form="review"], form[data-form="purchase-review"], form[data-form="search-flights"], form[data-form="filter-accounts"]')) {
         updateChildren(before, after);
       }
     }
@@ -467,13 +468,16 @@ function tripPage(code, version) {
       link("trip/" + enc(f.code),esc(f.origin) + ' → ' + esc(f.destination), f.code === trip.code ? "primary" : "")).join("") + '</nav>' : "";
     const receipt = trip.order_id ? '<section class="card stack"><h2>Төлем түбіртегі</h2><div class="receipt-lines">'
       + receiptLine("Билет тарифі",trip.fare_name) + receiptLine("Багаж",trip.baggage)
-      + receiptLine("Жеңілдік",trip.discount_pct+"%") + receiptLine("Төленді · " + trip.legs.length + " рейс",money(trip.total))
+      + receiptLine("Жеңілдік · " + trip.discount_pct + "%",money(trip.subtotal-trip.total))
+      + receiptLine("Төленді · " + trip.legs.length + " рейс",money(trip.total))
+      + receiptLine("Төлем тәсілі",paymentMethods[trip.payment_method]) + receiptLine("Операция нөмірі",trip.payment_ref)
       + receiptLine("Төлем күні",stamp(trip.purchased_at))
-      + (trip.cancelled_at ? receiptLine("Әмиянға қайтарылды",money(trip.refunded)) : receiptLine("Тариф бойынша қайтарым",trip.refund_pct+"%"))
+      + (trip.cancelled_at ? receiptLine("Қайтарылған сома",money(trip.refunded)) : receiptLine("Тариф бойынша қайтарым",trip.refund_pct+"%"))
       + '</div></section>' : "";
-    page(title("Менің билетім","trips") + '<div class="stack">' + tabs + '<section class="card pass"><div class="row space"><span class="caption">ДЕМО БИЛЕТ</span>'
+    page(title("Менің билетім","trips") + '<div class="stack">'
+      + (trip.ask_purchase_review ? purchaseReviewInvite(trip.order_id) : "") + tabs + '<section class="card pass"><div class="row space"><span class="caption">ДЕМО БИЛЕТ</span>'
       + '<span class="badge">' + label + '</span></div>' + flightInfo(trip)
-      + '<p class="meta">Астана уақыты (UTC+5)' + (trip.seat ? " · Орын " + esc(trip.seat) : "") + '</p><hr class="rule">'
+      + '<p class="meta">Астана уақыты (UTC+5)' + (trip.seat ? " · Орын " + esc(trip.seat) : "") + '</p>' + checkinClock(trip) + '<hr class="rule">'
       + (trip.cancelled || trip.status === 3 ? "" : '<img class="qr" src="/api/trips/' + enc(code) + '/qr.svg" alt="Броньның QR коды">')
       + '<strong class="code">' + esc(code) + '</strong></section>' + receipt
       + (upcoming(trip) ? link("checklist/" + enc(code),"Ұшуға дайындық · " + countTasks(trip.trip_tasks) + "/4","full") : "")
@@ -483,6 +487,7 @@ function tripPage(code, version) {
       + button("share","Бронь мәліметін бөлісу",code,"full")
       + (trip.refund.allowed ? button("cancel-trip","Билетті қайтару · " + money(trip.refund.amount),code,"danger full")
         : !trip.cancelled && !trip.completed ? blank(trip.refund.reason) : "") + '</div>',"trips");
+    updateCheckinClocks();
   });
 }
 
@@ -586,27 +591,39 @@ function passportPage(params, version) {
   });
 }
 
-function reviewForm(eligible, selected) {
-  if (!eligible.length) return blank("Расталған сапардан кейін осы жерде пікір қалдыра аласыз.");
+function ratingField(heading) {
   const stars = ratingLabels.slice(1).map((label, index) => {
     const value = index + 1;
     return '<label class="rating-choice"><input type="radio" name="rating" value="' + value + '" required>'
       + '<span class="rating-star" aria-hidden="true">★</span><span class="sr-only">' + value + ' / 5 · ' + label + '</span></label>';
   }).join("");
+  return '<fieldset class="rating-field"><legend>' + heading + '</legend><div class="rating-options">' + stars
+    + '</div><p class="sub" data-rating-caption role="status">Бағаңызды таңдаңыз</p></fieldset>';
+}
+
+function purchaseReviewInvite(orderId) {
+  return '<details class="card purchase-invite"><summary><strong>Алғашқы сатып алуыңыз қалай өтті?</strong>'
+    + '<span>Билет рәсімдеуді бағалау ›</span></summary><form class="fields" data-form="purchase-review" data-key="' + Number(orderId) + '">'
+    + ratingField("Билет сатып алуға баға беріңіз")
+    + '<label class="field">Пікіріңіз (міндетті емес)<textarea name="body" maxlength="2000"></textarea></label>'
+    + submit("Бағаны жіберу") + '</form></details>';
+}
+
+function reviewForm(eligible, selected) {
+  if (!eligible.length) return blank("Сапарды оператор растаған соң, рейске пікір қалдыра аласыз.");
   return '<form class="card fields review-form" data-form="review">'
     + selectField("Аяқталған рейс","trip_code",eligible.map(t => [t.code,t.flight_number + ' · ' + t.origin + ' → ' + t.city + ' · ' + stamp(t.departure)]),selected)
-    + '<fieldset class="rating-field"><legend>Қызметке баға беріңіз</legend>'
-    + '<div class="rating-options">' + stars + '</div><p class="sub" data-rating-caption role="status">Бағаңызды таңдаңыз</p></fieldset>'
+    + ratingField("Рейске баға беріңіз")
     + '<label class="field">Пікіріңіз<textarea name="body" required maxlength="2000" placeholder="Не ұнады? Нені жақсартуға болады?"></textarea></label>'
     + '<p class="meta">Пікіріңіз әкімшіге жіберіледі.</p>' + submit("Пікірді жіберу") + '</form>';
 }
 
 function reviewsPage(params, version) {
-  return watchView(version, user.role === "passenger" ? ["reviews","reviewable"] : ["reviews"], ([items,eligible]) => {
+  return watchView(version, user.role === "passenger" ? ["reviews","reviewable","purchase-review"] : ["reviews"], ([items,eligible,first]) => {
     const passenger = user.role === "passenger";
     const cards = items.map(item => '<article class="card stack"><div class="row space wrap"><h3>' + esc(item.name) + '</h3>'
       + '<time class="meta" datetime="' + new Date(item.created).toISOString() + '">' + esc(stamp(item.created)) + '</time></div>'
-      + (item.flight_number ? '<p class="meta">' + esc(item.flight_number) + ' · ' + esc(item.city) + '</p>' : "")
+      + (item.purchase_order ? '<p class="meta">Билет сатып алу</p>' : item.flight_number ? '<p class="meta">' + esc(item.flight_number) + ' · ' + esc(item.city) + '</p>' : "")
       + (passenger ? "" : '<p class="meta">' + esc(item.email) + '</p>')
       + '<div class="row wrap"><span class="review-stars" role="img" aria-label="' + item.rating + ' / 5">'
       + '<span aria-hidden="true">' + '★'.repeat(item.rating) + '<span class="unfilled">' + '★'.repeat(5 - item.rating) + '</span></span></span>'
@@ -614,7 +631,7 @@ function reviewsPage(params, version) {
     const summary = items.length ? '<section class="dark"><h2>' + (items.reduce((sum, item) => sum + item.rating, 0) / items.length).toFixed(1)
       + ' / 5</h2><small>' + items.length + ' пікір · орташа баға</small></section>' : "";
     page(title(passenger ? "Менің пікірлерім" : "Жолаушы пікірлері") + '<div class="stack">'
-      + (passenger ? reviewForm(eligible,params.get("code")) : summary + button("refresh","Жаңарту"))
+      + (first ? purchaseReviewInvite(first.id) : "") + (passenger ? reviewForm(eligible,params.get("code")) : summary + button("refresh","Жаңарту"))
       + '<h2 class="section">' + (passenger ? "Жіберілген пікірлерім" : "Барлық пікірлер") + '</h2>'
       + (cards.length ? cards.join("") : blank(passenger ? "Жіберілген пікіріңіз осы жерде көрінеді." : "Жолаушылардың пікірлері осы жерде көрінеді.")) + '</div>',"profile");
   });
@@ -767,12 +784,11 @@ async function newOperator(version) {
 function aboutPage(params) {
   const destination = enc(airportName + ", " + airportAddress);
   const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + destination;
-  const routeUrl = "https://www.google.com/maps/dir/?api=1&destination=" + destination;
   const back = user ? "home" : (params.get("from") === "register" ? "register" : "login");
   page(title("Біз туралы",back) + '<div class="stack">'
     + '<section class="dark"><p class="caption">NQZ / АСТАНА</p><h2>Airport</h2><small>Әуежай қызметтерінің оқу жобасы</small></section>'
     + '<section class="card stack"><h2>Біздің мекенжай</h2><h3>' + esc(airportName) + '</h3><p>' + esc(airportAddress) + '</p>'
-    + '<div class="button-row">' + external(mapUrl,ice("map") + " Картадан көру") + external(routeUrl,ice("route") + " Бағыт алу") + '</div></section>'
+    + '<div class="button-row">' + external(mapUrl,ice("map") + " Мекенжайды көру") + link("directions",ice("route") + " Жол бағыты") + '</div></section>'
     + '<section class="card stack"><h2>Жоба туралы</h2><p>Жолаушы рейс іздеп, орын таңдайды және QR-талон алады. Оператор жолаушыны тіркеп, сапарды растайды. Әкімші аккаунттарды басқарып, пікірлер мен қызметтік журналды қарайды.</p>'
     + '<p class="sub">Рейстер мен броньдар оқу көрсетіліміне арналған. Нақты ұшу мәліметтерін әуежайдың ресми таблосынан тексеріңіз.</p></section>'
     + '<section class="card stack"><h2>Жоба авторлары</h2><p>Айболатқызы Қарлығаш<br>Айтқұл Бейбарс<br>Алпысбайұлы Ерасыл</p>'
@@ -798,11 +814,17 @@ async function render() {
   window.scrollTo(0,0);
   if (dialog.open) dialog.close("cancel");
   if (screen === "about") return aboutPage(params);
+  if (screen === "directions") {
+    page(title("Жол бағыты",user ? "home" : "about") + '<div id="airport-route"></div>',"home","wayfinding-page");
+    mountRouteMap($("#airport-route"),params,selection => history.replaceState(history.state,"","#" + href("directions",selection)));
+    return;
+  }
   if (screen === "media") {
     cinemaPage(params);
     return;
   }
   if (!user) {
+    if (screen === "live") signInReturn = location.hash.slice(1);
     loginPage(screen === "register");
     return;
   }
@@ -813,7 +835,7 @@ async function render() {
       case "flights": return await flightList(params,version);
       case "search": if (user.role === "passenger") return await finderPage(params,version); break;
       case "checkout": if (user.role === "passenger") return await checkoutPage(params.get("legs"),params.get("back"),version); break;
-      case "directions": return navigationPage(params);
+      case "payment": if (user.role === "passenger" && /^AP-[A-F0-9]{16}$/.test(raw)) return await paymentPage(raw,version); break;
       case "live": return await livePage(params,version);
       case "sales-admin": if (user.role === "admin") return await salesAdmin(params,version); break;
       case "airline-new": if (user.role === "admin") return airlineEditor(); break;
@@ -858,6 +880,11 @@ app.addEventListener("click", async event => {
   try {
     switch (action) {
       case "refresh": if (watchedView) await refreshView(); else await render(); break;
+      case "cancel-payment": {
+        await api("payments/" + enc(value) + "/cancel","POST");
+        await render();
+        break;
+      }
       case "swap-cities": {
         const from = $('[name="origin"]'), to = $('[name="destination"]');
         [from.value,to.value] = [to.value,from.value];
@@ -873,6 +900,7 @@ app.addEventListener("click", async event => {
       case "logout":
         await api("logout","POST");
         user = null;
+        signInReturn = "";
         dashboard = {};
         go("login");
         break;
@@ -881,7 +909,8 @@ app.addEventListener("click", async event => {
         if (!trip.refund.allowed) throw new Error(trip.refund.reason);
         const affected = trip.legs.filter(f => trip.refund.codes.includes(f.code)).map(f => f.number).join(" / ");
         if (await confirmAction("Билетті қайтару",affected + " · " + trip.refund.reason
-            + " Әмиянға " + money(trip.refund.amount) + " қайтарылады. Көрсетілген рейстердегі орындар босатылады.","Қайтару")) {
+            + " Қайтарылатын сома · " + money(trip.refund.amount) + (trip.payment_method ? " · " + paymentMethods[trip.payment_method] : "")
+            + ". Көрсетілген рейстердегі орындар босатылады.","Қайтару")) {
           const receipt = await api(href("trips/" + enc(value),{expected:trip.refund.amount}),"DELETE");
           await render();
           showMessage("Билет қайтарылды · " + money(receipt.refunded));
@@ -948,17 +977,13 @@ app.addEventListener("change", async event => {
   const field = event.target;
   try {
     if (field.name === "rating") {
-      const form = field.closest('[data-form="review"]');
+      const form = field.closest("form");
       for (const option of form.querySelectorAll('[name="rating"]')) {
         option.closest(".rating-choice").classList.toggle("selected", Number(option.value) <= Number(field.value));
       }
       form.querySelector("[data-rating-caption]").textContent = field.value + " / 5 · " + ratingLabels[Number(field.value)];
     } else if (field.name === "fare_id") {
       updatePrice();
-    } else if (field.closest('[data-form="directions"]')) {
-      navigationInputs();
-    } else if (field.name === "mode" && field.closest('[data-form="live-search"]')) {
-      $('[name="q"]').placeholder = field.value === "flight" ? "KC123 немесе KZR123" : "Мысалы, P4-KCA";
     } else if (field.name === "weather-city") {
       go(href("weather",{city:field.value}));
     } else if (field.name === "ticket-state") {
@@ -992,7 +1017,8 @@ app.addEventListener("submit", async event => {
     switch (action) {
       case "register": case "login":
         user = await api(action,"POST",values);
-        go("home");
+        go(signInReturn || "home");
+        signInReturn = "";
         break;
       case "search-flights": case "filter-accounts":
         go(href(action === "search-flights" ? "flights" : "accounts",Object.fromEntries(
@@ -1015,7 +1041,12 @@ app.addEventListener("submit", async event => {
         go(href("search",values));
         break;
       case "checkout": await pay(values); break;
-      case "directions": mapResult(values); break;
+      case "approve-payment": {
+        const result = await api("payments/" + enc(key) + "/confirm","POST",{code:values.approval_code || ""});
+        showMessage("Төлем қабылданды. Билетіңіз дайын.");
+        go("trip/" + result.code);
+        break;
+      }
       case "live-search": go(href("live",values)); break;
       case "airline-new":
         await api("admin/airlines","POST",{name:values.name,code:values.code,operator:{name:values.operator_name,email:values.email,password:values.password}});
@@ -1051,6 +1082,11 @@ app.addEventListener("submit", async event => {
         await render();
         showMessage("Пікіріңіз әкімшіге жіберілді. Рақмет!");
         break;
+      case "purchase-review":
+        await api("purchase-review","POST",{order_id:Number(key),rating:Number(values.rating),body:values.body});
+        await render();
+        showMessage("Сатып алу туралы пікіріңіз сақталды. Рақмет!");
+        break;
       case "message":
         await api("tickets/" + key + "/messages","POST",values);
         await render();
@@ -1079,6 +1115,7 @@ app.addEventListener("submit", async event => {
 
 window.addEventListener("hashchange",render);
 window.setInterval(refreshView, 5000);
+window.setInterval(updateCheckinClocks, 30000);
 document.addEventListener("visibilitychange", resumeView);
 window.addEventListener("pageshow", event => { if (event.persisted) resumeView(); });
 window.addEventListener("online", refreshView);

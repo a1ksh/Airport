@@ -5,8 +5,8 @@
     <string name="about_address_heading">Біздің мекенжай</string>
     <string name="about_airport_name">Нұрсұлтан Назарбаев халықаралық әуежайы</string>
     <string name="about_airport_address">Астана, Қабанбай батыр даңғылы, 119</string>
-    <string name="about_view_map">Картадан көру</string>
-    <string name="about_route">Бағыт алу</string>
+    <string name="about_view_map">Мекенжайды көру</string>
+    <string name="about_route">Жол бағыты</string>
     <string name="about_project_heading">Жоба туралы</string>
     <string name="about_project_description">Airport қосымшасында жолаушы рейс іздеп, орын таңдайды және QR-талон алады. Оператор жолаушыны тіркеп, сапарды растайды. Әкімші аккаунттарды басқарып, пікірлер мен қызметтік журналды қарайды.</string>
     <string name="about_team_heading">Жоба авторлары</string>

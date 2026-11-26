@@ -5,6 +5,7 @@
         android:icon="@drawable/airport_icon" android:allowBackup="false" android:fullBackupContent="false"
         android:dataExtractionRules="@xml/data_rules" android:supportsRtl="false">
         <activity android:name=".ui.AboutActivity" android:exported="false"/>
+        <activity android:name=".ui.RouteMapActivity" android:exported="false"/>
         <activity android:name=".ui.PassportActivity" android:exported="false"/>
         <activity android:name=".ui.MediaActivity" android:exported="false"/>
         <activity android:name=".ui.ReviewsActivity" android:exported="false" android:windowSoftInputMode="adjustResize"/>

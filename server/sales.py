@@ -1,8 +1,9 @@
-"""Route comparison, demo wallet settlement and whole-itinerary refunds."""
+"""Route comparison, simulated payments and itinerary refunds."""
 import json
 import secrets
 from collections import defaultdict
 from datetime import date, datetime, time
+from typing import Literal
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -28,6 +29,14 @@ class Purchase(BaseModel):
     request_id: UUID
 
 
+class PaymentStart(Purchase):
+    method: Literal["wallet", "card", "qr"]
+
+
+class PaymentApproval(BaseModel):
+    code: str = Field(default="", max_length=4)
+
+
 def loyalty(db, uid):
     count = db.execute("SELECT COUNT(*) FROM travel_stamps WHERE user=?", (uid,)).fetchone()[0]
     percent = 10 if count >= 10 else 5 if count >= 3 else 0
@@ -35,7 +44,7 @@ def loyalty(db, uid):
 
 
 def balance(db, uid):
-    spent = db.execute("SELECT COALESCE(SUM(total-refunded),0) FROM orders WHERE user=?", (uid,)).fetchone()[0]
+    spent = db.execute("SELECT COALESCE(SUM(total-refunded),0) FROM orders WHERE user=? AND payment_method='wallet'", (uid,)).fetchone()[0]
     return OPENING_CREDIT - spent
 
 
@@ -66,7 +75,7 @@ def offers(db, uid, origin, destination, day, direct, sort):
     for leg in legs:
         if leg["destination"] == destination:
             onward[leg["origin"]].append(leg)
-    fare = db.execute("SELECT * FROM fares ORDER BY markup_pct,id LIMIT 1").fetchone()
+    fare = db.execute("SELECT * FROM fares WHERE available=1 ORDER BY markup_pct,id LIMIT 1").fetchone()
     discount = loyalty(db, uid)["percent"]
     results = []
     for first in legs:
@@ -111,47 +120,150 @@ def quote(db, uid, ids):
     tier = loyalty(db, uid)
     return {"legs": [{**data.flight_json(leg), "occupied": occupied(db, leg["id"])} for leg in legs],
             "seats": data.SEATS, "loyalty": tier, "balance": balance(db, uid),
-            "fares": [prices(legs, fare, tier["percent"]) for fare in db.execute("SELECT * FROM fares ORDER BY markup_pct,id")]}
+            "fares": [prices(legs, fare, tier["percent"]) for fare in db.execute("SELECT * FROM fares WHERE available=1 ORDER BY markup_pct,id")]}
+
+
+def selection_key(entry):
+    # This is also the idempotency payload of wallet orders from the first version.
+    return json.dumps([[(leg.flight, leg.seat) for leg in entry.legs], entry.fare_id, entry.expected_total])
+
+
+def check_purchase(db, uid, entry, method):
+    legs = load_legs(db, [leg.flight for leg in entry.legs])
+    fare = db.execute("SELECT * FROM fares WHERE id=? AND available=1", (entry.fare_id,)).fetchone()
+    if not fare:
+        raise HTTPException(409, "Тариф өзгерді. Билетті қайта таңдаңыз.")
+    discount = loyalty(db, uid)["percent"]
+    price = prices(legs, fare, discount)
+    if price["total"] != entry.expected_total:
+        raise HTTPException(409, "Баға өзгерді. Төлем сомасын қайта тексеріңіз.")
+    if method == "wallet" and balance(db, uid) < price["total"]:
+        raise HTTPException(409, "Демо әмиянда қаражат жеткіліксіз.")
+    for leg in entry.legs:
+        if leg.seat not in data.SEATS:
+            raise HTTPException(400, "Әр рейске орын таңдаңыз.")
+        if db.execute("SELECT 1 FROM bookings WHERE flight=? AND cancelled=0 AND (seat=? OR user=?)",
+                      (leg.flight, leg.seat, uid)).fetchone():
+            raise HTTPException(409, "Орын бос емес немесе бұл рейске билетіңіз бар. Таңдауды жаңартыңыз.")
+    return fare, discount, price
+
+
+def existing_order(db, uid, request_id):
+    return db.execute("""SELECT o.*,b.code FROM orders o JOIN bookings b ON b.order_id=o.id AND b.leg_index=0
+                         WHERE o.user=? AND o.request_id=?""", (uid, str(request_id))).fetchone()
+
+
+def issue_tickets(db, uid, entry, method, ref):
+    # The caller owns one immediate transaction for payment and every seat.
+    prior = existing_order(db, uid, entry.request_id)
+    if prior:
+        if prior["request_body"] != selection_key(entry) or prior["payment_method"] != method:
+            raise HTTPException(409, "Бұл төлем коды басқа тапсырысқа тиесілі.")
+        return {"code": prior["code"]}
+    fare, discount, price = check_purchase(db, uid, entry, method)
+    order = db.execute("""INSERT INTO orders(user,request_id,request_body,created,fare_name,baggage,
+        refund_pct,subtotal,discount_pct,total,payment_method,payment_ref) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (uid, str(entry.request_id), selection_key(entry), data.now_ms(), fare["name"], fare["baggage"],
+         fare["refund_pct"], price["subtotal"], discount, price["total"], method, ref)).lastrowid
+    codes = []
+    for i, leg in enumerate(entry.legs):
+        code = "NQZ-" + secrets.token_hex(4).upper()
+        while db.execute("SELECT 1 FROM bookings WHERE code=?", (code,)).fetchone():
+            code = "NQZ-" + secrets.token_hex(4).upper()
+        db.execute("""INSERT INTO bookings(user,flight,code,seat,order_id,leg_index,paid_amount)
+                      VALUES (?,?,?,?,?,?,?)""", (uid, leg.flight, code, leg.seat, order, i, price["amounts"][i]))
+        codes.append(code)
+    return {"code": codes[0]}
 
 
 def checkout(db, uid, entry):
-    request = str(entry.request_id)
-    body = json.dumps([[(leg.flight, leg.seat) for leg in entry.legs], entry.fare_id, entry.expected_total])
+    """Older clients explicitly confirmed their wallet payment on the seat screen."""
     with data.transaction(db):
-        prior = db.execute("SELECT id,request_body FROM orders WHERE user=? AND request_id=?", (uid, request)).fetchone()
-        if prior:
-            if prior["request_body"] != body:
+        if db.execute("SELECT 1 FROM payment_requests WHERE user=? AND request_id=?", (uid, str(entry.request_id))).fetchone():
+            raise HTTPException(409, "Төлемді растау бетін ашыңыз.")
+        return issue_tickets(db, uid, entry, "wallet", "AP-" + secrets.token_hex(8).upper())
+
+
+def start_payment(db, uid, entry):
+    purchase = Purchase(**entry.model_dump())
+    selection = purchase.model_dump_json()
+    with data.transaction(db):
+        old = db.execute("SELECT * FROM payment_requests WHERE user=? AND request_id=?", (uid, str(entry.request_id))).fetchone()
+        if old:
+            if old["selection"] != selection or old["method"] != entry.method:
                 raise HTTPException(409, "Бұл төлем коды басқа тапсырысқа тиесілі.")
-            code = db.execute("SELECT code FROM bookings WHERE order_id=? AND leg_index=0", (prior["id"],)).fetchone()[0]
-            return {"code": code}
-        legs = load_legs(db, [leg.flight for leg in entry.legs])
-        fare = db.execute("SELECT * FROM fares WHERE id=?", (entry.fare_id,)).fetchone()
-        if not fare:
-            raise HTTPException(404, "Тариф табылмады.")
-        discount = loyalty(db, uid)["percent"]
-        price = prices(legs, fare, discount)
-        if price["total"] != entry.expected_total:
-            raise HTTPException(409, "Баға өзгерді. Төлем сомасын қайта тексеріңіз.")
-        if balance(db, uid) < price["total"]:
-            raise HTTPException(409, "Демо әмиянда қаражат жеткіліксіз.")
-        order = db.execute("""INSERT INTO orders(user,request_id,request_body,created,fare_name,baggage,
-            refund_pct,subtotal,discount_pct,total) VALUES (?,?,?,?,?,?,?,?,?,?)""",
-            (uid, request, body, data.now_ms(), fare["name"], fare["baggage"], fare["refund_pct"],
-             price["subtotal"], discount, price["total"])).lastrowid
-        codes = []
-        for i, leg in enumerate(entry.legs):
-            if leg.seat not in data.SEATS:
-                raise HTTPException(400, "Әр рейске орын таңдаңыз.")
-            if db.execute("""SELECT 1 FROM bookings WHERE flight=? AND cancelled=0 AND (seat=? OR user=?)""",
-                          (leg.flight, leg.seat, uid)).fetchone():
-                raise HTTPException(409, "Орын бос емес немесе бұл рейске билетіңіз бар. Таңдауды жаңартыңыз.")
-            code = "NQZ-" + secrets.token_hex(4).upper()
-            while db.execute("SELECT 1 FROM bookings WHERE code=?", (code,)).fetchone():
-                code = "NQZ-" + secrets.token_hex(4).upper()
-            db.execute("""INSERT INTO bookings(user,flight,code,seat,order_id,leg_index,paid_amount)
-                          VALUES (?,?,?,?,?,?,?)""", (uid, leg.flight, code, leg.seat, order, i, price["amounts"][i]))
-            codes.append(code)
-    return {"code": codes[0]}
+            return {"ref": old["ref"]}
+        if existing_order(db, uid, entry.request_id):
+            raise HTTPException(409, "Билет рәсімделген. «Сапарлар» бөлімін ашыңыз.")
+        check_purchase(db, uid, purchase, entry.method)
+        now = data.now_ms()
+        ref = "AP-" + secrets.token_hex(8).upper()
+        challenge = f"{secrets.randbelow(10000):04}" if entry.method == "card" else None
+        db.execute("""INSERT INTO payment_requests(ref,user,request_id,selection,method,created,expires,challenge)
+                      VALUES (?,?,?,?,?,?,?,?)""",
+                   (ref, uid, str(entry.request_id), selection, entry.method, now, now + 5*MINUTE, challenge))
+    return {"ref": ref}
+
+
+def payment_request(db, uid, ref):
+    row = db.execute("""SELECT p.*,b.code FROM payment_requests p LEFT JOIN orders o ON o.payment_ref=p.ref
+                        LEFT JOIN bookings b ON b.order_id=o.id AND b.leg_index=0 WHERE p.user=? AND p.ref=?""",
+                     (uid, ref)).fetchone()
+    if not row:
+        raise HTTPException(404, "Төлем табылмады.")
+    return row
+
+
+def payment_state(row):
+    if row["code"]:
+        return "paid"
+    if row["cancelled"]:
+        return "cancelled"
+    return "expired" if data.now_ms() >= row["expires"] else "pending"
+
+
+def payment_details(db, uid, ref):
+    row = payment_request(db, uid, ref)
+    entry = Purchase.model_validate_json(row["selection"])
+    state = payment_state(row)
+    legs = []
+    for leg in entry.legs:
+        flight = db.execute("SELECT number,origin,destination FROM schedule WHERE id=?", (leg.flight,)).fetchone()
+        legs.append({**dict(flight), "id": leg.flight, "seat": leg.seat})
+    return {"ref": ref, "state": state, "method": row["method"], "amount": entry.expected_total, "legs": legs,
+            "expires": row["expires"], "created": row["created"], "code": row["code"],
+            "balance": balance(db, uid) if row["method"] == "wallet" else None,
+            "demo_code": row["challenge"] if state == "pending" else None}
+
+
+def confirm_payment(db, uid, ref, approval):
+    with data.transaction(db):
+        row = payment_request(db, uid, ref)
+        state = payment_state(row)
+        if state == "paid":
+            return {"code": row["code"]}
+        if state != "pending":
+            raise HTTPException(409, "Бұл төлем жабылды. Билетті қайта рәсімдеңіз.")
+        if row["method"] == "card" and approval.code != row["challenge"]:
+            raise HTTPException(400, "Оқу хабарламасындағы төрт таңбалы кодты енгізіңіз.")
+        entry = Purchase.model_validate_json(row["selection"])
+        return issue_tickets(db, uid, entry, row["method"], ref)
+
+
+def cancel_payment(db, uid, ref):
+    with data.transaction(db):
+        row = payment_request(db, uid, ref)
+        if row["code"]:
+            raise HTTPException(409, "Билет төленген. Қайтару үшін билетті ашыңыз.")
+        db.execute("UPDATE payment_requests SET cancelled=1 WHERE ref=?", (ref,))
+    return {"ok": True}
+
+
+def first_purchase_to_review(db, uid):
+    row = db.execute("""SELECT o.id,b.code FROM orders o JOIN bookings b ON b.order_id=o.id AND b.leg_index=0
+        WHERE o.user=? AND NOT EXISTS (SELECT 1 FROM reviews r WHERE r.user=o.user AND r.purchase_order IS NOT NULL)
+        ORDER BY o.id LIMIT 1""", (uid,)).fetchone()
+    return dict(row) if row else None
 
 
 def order_legs(db, uid, code):

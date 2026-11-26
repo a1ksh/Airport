@@ -8,13 +8,13 @@ The app interface is in Kazakh. Navigation labels below describe the correspondi
 
 | Role | Features |
 | --- | --- |
-| Passenger | Compare direct and one-stop tickets, choose fares and seats, pay in tenge from a demo wallet, see QR passes for each leg and request a refund. Completed flights unlock reviews, passport stamps and frequent-flyer discounts. |
+| Passenger | Compare direct and one-stop tickets, choose a fare and seats, and pay in tenge by demo wallet, card or QR. Each leg has a QR pass. Review the first purchase, request a refund, and earn passport stamps and discounts on completed flights. |
 | Operator | Manage their airline's flights, prices, gates, flight durations and check-in windows. See its manifests and support requests, check in passengers and confirm arrivals. |
 | Administrator | Oversee all airlines, flights, manifests, payments and refunds. Add an airline with its first operator, assign additional operators, publish ticket types, manage accounts and review feedback. |
 
 The app also has an airborne flight board with aircraft registration and callsign search, directions between cities and Astana's two terminals, weather forecasts, a travel guide and two videos.
 
-**About** (Біз туралы) lists the project team and the address of Astana International Airport. **View on map** opens the airport in Google Maps. **Get directions** uses the same destination and lets the user choose a starting point. The Android launcher includes this screen before a server is configured. On the website, visitors can open it from the sign-in page or directly at `/#about`.
+**About** (Біз туралы) lists the project team and the address of Astana International Airport. **Мекенжайды көру** opens the real address in Google Maps. **Жол бағыты** opens the project's fictional interactive map. Guests can use the map at `/#directions` and from the Android launcher's About screen before connecting to a server.
 
 ## Getting started
 
@@ -80,11 +80,11 @@ Use the same server address on all devices. For a cross-device demonstration, op
 2. In the operator’s browser, open the request, write a reply and update its status if needed. The messages button displays an unread count.
 3. On Android, read the reply in the same conversation. Its unread indicator clears after reading.
 4. Open **Билет іздеу**, choose **Астана → Ыстанбұл** for tomorrow, and compare the direct trip with a connection in Алматы. Sort by price, departure or travel time. Schedules and check-in times use Astana time (UTC+5).
-5. Pick a fare and a seat on each leg. Confirm the demo-wallet payment. **Сапарлар** shows the ticket, payment receipt and a separate QR code for each flight. **Билетті қайтару** previews the refund before releasing the seats. Returned tickets stay in the history.
+5. Choose **Эконом**, **Эконом Плюс** or **Бизнес-класс** and a seat on each leg. Confirm a wallet payment, enter the code shown for the fictional Qanat Bank card, or approve the order's demo QR. The receipt records the original method and transaction number. The first paid ticket invites the passenger to rate checkout. **Билетті қайтару** previews the refund to the same method before releasing the seats. Returned tickets stay in the history.
 6. As the airline operator, edit a flight's schedule and check-in window. Passengers with flight alerts enabled receive the new times. Check a passenger in during that window and confirm the completed flight after its arrival.
 7. Open **Пікірлер** after a confirmed flight to rate it once. For a quick demonstration the initial passenger already has two confirmed trips. Three completed flights earn 5% off future tickets and ten earn 10%. **Профиль** shows the discount and wallet balance.
 8. As administrator, open **Компаниялар, тарифтер және төлемдер** to add an airline with its first operator, add a fare with baggage and refund terms, or view payments and refunds across airlines.
-9. Use **Жол бағыты** for station-to-terminal, T1–T2 or custom city/address directions. **Қазір әуеде** shows live observations around the selected airport or looks up a commercial aircraft by tail number or callsign. The official airport board is linked from this screen.
+9. Open **Жол бағыты**, tap two stops or use the selectors, and choose a bus, car or walking route. Try the intercity bus station to T1, or walk from T1 to T2. The highlighted route, distance and time use a fictional network. **Қазір әуеде** shows live observations from adsb.lol around the selected airport. Tap a current aircraft or look it up by registration or callsign. The ticket search uses the teaching timetable.
 
 Each passenger starts with 1,000,000 demo tenge. Prices and fare rules are classroom examples. Payment and refund entries stay in the project's SQLite database. The ticket flow accepts no card details. If the airline cancels a flight or a schedule change breaks the connection, unused affected tickets qualify for a full refund of their paid amount.
 

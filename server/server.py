@@ -276,7 +276,7 @@ def catalog(who=Depends(signed_in), db=Depends(data.database)):
     cities = set(data.CITIES)
     cities.update(r[0] for r in db.execute("SELECT origin FROM schedule UNION SELECT destination FROM schedule"))
     return {"airlines": airlines, "cities": [{"name": c, "code": data.CITIES.get(c, ("",))[0]} for c in sorted(cities)],
-            "fares": [dict(r) for r in db.execute("SELECT * FROM fares ORDER BY markup_pct,id")]}
+            "fares": [dict(r) for r in db.execute("SELECT * FROM fares WHERE available=1 ORDER BY markup_pct,id")]}
 
 
 @app.get("/api/offers")
@@ -306,6 +306,38 @@ def checkout(entry: sales.Purchase, who=Depends(signed_in), db=Depends(data.data
 def live(mode: Literal["registration", "flight"] = "registration", q: str = Query("", max_length=16),
          airport: Literal["NQZ", "ALA", "IST", "LHR"] = "NQZ", who=Depends(signed_in)):
     return live_board(mode, q, airport)
+
+
+@app.post("/api/payments")
+def open_payment(entry: sales.PaymentStart, who=Depends(signed_in), db=Depends(data.database)):
+    allow(who, "passenger")
+    return sales.start_payment(db, who["id"], entry)
+
+
+@app.get("/api/payments/{ref}")
+def payment(ref: str, who=Depends(signed_in), db=Depends(data.database)):
+    allow(who, "passenger")
+    return sales.payment_details(db, who["id"], ref)
+
+
+@app.get("/api/payments/{ref}/qr.svg")
+def payment_qr(ref: str, who=Depends(signed_in), db=Depends(data.database)):
+    info = payment(ref, who, db)
+    if info["method"] != "qr" or info["state"] != "pending":
+        fail("QR-төлем жабық.", 409)
+    return qr_image(f"AIRPORT-DEMO|{ref}|{info['amount']} KZT")
+
+
+@app.post("/api/payments/{ref}/confirm")
+def approve_payment(ref: str, entry: sales.PaymentApproval, who=Depends(signed_in), db=Depends(data.database)):
+    allow(who, "passenger")
+    return sales.confirm_payment(db, who["id"], ref, entry)
+
+
+@app.post("/api/payments/{ref}/cancel")
+def abandon_payment(ref: str, who=Depends(signed_in), db=Depends(data.database)):
+    allow(who, "passenger")
+    return sales.cancel_payment(db, who["id"], ref)
 
 
 @app.get("/api/flights")
@@ -472,8 +504,10 @@ def passport(who=Depends(signed_in), db=Depends(data.database)):
 def get_trip(code: str, who=Depends(signed_in), db=Depends(data.database)):
     selected = trip(db, who, code)
     legs = sales.order_legs(db, who["id"], code)
-    return {**data.flight_json(selected), "legs": [data.flight_json(leg) for leg in legs],
-            "refund": sales.refund_terms(legs)}
+    receipt = db.execute("SELECT payment_method,payment_ref,subtotal FROM orders WHERE id=?", (selected["order_id"],)).fetchone()
+    first = sales.first_purchase_to_review(db, who["id"])
+    return {**data.flight_json(selected), **(dict(receipt) if receipt else {}), "legs": [data.flight_json(leg) for leg in legs],
+            "refund": sales.refund_terms(legs), "ask_purchase_review": bool(first and first["id"] == selected["order_id"])}
 
 
 @app.get("/api/flights/{key}/seats")
@@ -512,7 +546,11 @@ def boarding_qr(code: str, who=Depends(signed_in), db=Depends(data.database)):
     row = trip(db, who, code)
     if row["cancelled"] or row["status"] == 3:
         fail("Қайтарылған немесе тоқтатылған билетке талон берілмейді.", 409)
-    image = qrcode.make(row["code"], image_factory=qrcode.image.svg.SvgPathFillImage)
+    return qr_image(row["code"])
+
+
+def qr_image(value):
+    image = qrcode.make(value, image_factory=qrcode.image.svg.SvgPathFillImage)
     output = io.BytesIO()
     image.save(output)
     return Response(output.getvalue(), media_type="image/svg+xml")
@@ -744,7 +782,7 @@ def admin_sales(before: int | None = Query(None, gt=0), who=Depends(signed_in), 
         (SELECT COUNT(*) FROM flights f WHERE f.airline_id=a.id) AS flights,
         (SELECT COUNT(*) FROM bookings b JOIN flights f ON f.id=b.flight
          WHERE f.airline_id=a.id AND b.cancelled=0) AS tickets FROM airlines a ORDER BY a.name""")]
-    rows = db.execute("""SELECT o.id,o.total,o.refunded,o.cancelled_at,o.created,o.fare_name,u.name,b.code
+    rows = db.execute("""SELECT o.id,o.total,o.refunded,o.cancelled_at,o.created,o.fare_name,o.payment_method,o.payment_ref,u.name,b.code
         FROM orders o JOIN users u ON u.id=o.user JOIN bookings b ON b.order_id=o.id AND b.leg_index=0
         WHERE (? IS NULL OR o.id<?) ORDER BY o.id DESC LIMIT 26""", (before, before)).fetchall()
     payments = {r["id"]: {**dict(r), "legs": []} for r in rows[:25]}
@@ -821,6 +859,30 @@ class ReviewCreate(BaseModel):
     trip_code: str = Field(min_length=1, max_length=32)
     rating: int = Field(strict=True, ge=1, le=5)
     body: str = Field(min_length=1, max_length=2000)
+
+
+class PurchaseReview(BaseModel):
+    order_id: int = Field(gt=0)
+    rating: int = Field(strict=True, ge=1, le=5)
+    body: str = Field(default="", max_length=2000)
+
+
+@app.get("/api/purchase-review")
+def purchase_review(who=Depends(signed_in), db=Depends(data.database)):
+    allow(who, "passenger")
+    return sales.first_purchase_to_review(db, who["id"])
+
+
+@app.post("/api/purchase-review")
+def send_purchase_review(entry: PurchaseReview, who=Depends(signed_in), db=Depends(data.database)):
+    allow(who, "passenger")
+    with data.transaction(db):
+        first = sales.first_purchase_to_review(db, who["id"])
+        if not first or first["id"] != entry.order_id:
+            fail("Сатып алуды алғашқы төлемнен кейін бір рет бағалауға болады.", 409)
+        db.execute("INSERT INTO reviews(user,rating,body,created,purchase_order) VALUES (?,?,?,?,?)",
+                   (who["id"], entry.rating, entry.body.strip(), data.now_ms(), entry.order_id))
+    return {"ok": True}
 
 
 @app.post("/api/reviews")

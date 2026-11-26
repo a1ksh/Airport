@@ -42,6 +42,6 @@
     <string name="dialog_flight_time_text">Ұшу уақыты</string>
     <string name="dialog_ticket_text">ӨТІНІМ ТАҚЫРЫБЫ</string>
     <string name="dialog_ticket_ticket_text_hint">Сұрағыңызды жазыңыз</string>
-    <string name="home_menu_menu_map_title">Google Maps</string>
+    <string name="home_menu_menu_map_title">Жол бағыты</string>
     <string name="home_menu_menu_board_title">Ресми онлайн-табло</string>
 </resources>

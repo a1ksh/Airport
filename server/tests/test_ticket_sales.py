@@ -138,6 +138,81 @@ class TicketSalesTests(unittest.TestCase):
             self.assertEqual(self.p.get("/api/quote", params={"flights":f["id"]}).status_code, 409)
         self.assertEqual(self.p.get("/api/home").json()["balance"], sales.OPENING_CREDIT)
 
+    def test_simulated_payments_confirm_once_and_refund_the_original_method(self):
+        for method in ("card", "qr", "wallet"):
+            with self.subTest(method=method):
+                before = self.p.get("/api/home").json()["balance"]
+                entry = {**self.purchase_body(self.transfer), "method": method}
+                ref = self.p.post("/api/payments", json=entry).json()["ref"]
+                path = "/api/payments/" + ref
+                self.assertEqual(self.p.post("/api/payments", json=entry).json()["ref"], ref)
+                info = self.p.get(path).json()
+                self.assertEqual((info["state"],info["method"],info["amount"]), ("pending",method,entry["expected_total"]))
+                self.assertEqual(self.other.get(path).status_code, 404)
+                self.assertEqual(self.other.post(path+"/confirm", json={}).status_code, 404)
+                self.assertEqual(self.p.get("/api/home").json()["balance"], before)
+                self.assertEqual(self.p.get(path+"/qr.svg").status_code, 200 if method == "qr" else 409)
+                self.assertEqual(self.p.post("/api/checkout",json=entry).status_code, 409)
+                approval = {}
+                if method == "card":
+                    self.assertRegex(info["demo_code"], r"^\d{4}$")
+                    self.assertEqual(self.p.post(path+"/confirm",json={"code":"x"}).status_code, 400)
+                    approval["code"] = info["demo_code"]
+                with ThreadPoolExecutor(max_workers=2) as pool:
+                    codes = list(pool.map(lambda _: self.p.post(path+"/confirm",json=approval).json()["code"], range(2)))
+                self.assertEqual(codes[0],codes[1])
+                receipt = self.p.get("/api/trips/"+codes[0]).json()
+                self.assertEqual((receipt["payment_ref"],receipt["payment_method"],len(receipt["legs"])), (ref,method,2))
+                self.assertEqual(self.p.get(path).json()["state"], "paid")
+                self.assertEqual(self.p.post(path+"/cancel",json={}).status_code,409)
+                charge = info["amount"] if method == "wallet" else 0
+                self.assertEqual(self.p.get("/api/home").json()["balance"], before-charge)
+                refund = self.refund(self.p,codes[0]).json()["refunded"]
+                self.assertEqual(refund,info["amount"]*80//100)
+                self.assertEqual(self.p.get("/api/home").json()["balance"], before-charge+(refund if method=="wallet" else 0))
+                record = self.admin.get("/api/admin/sales").json()["payments"][0]
+                self.assertEqual((record["payment_method"],record["payment_ref"],record["refunded"]), (method,ref,refund))
+
+    def test_pending_payment_expiry_cancellation_and_competing_seat(self):
+        entry = {**self.purchase_body(self.direct), "method":"qr"}
+        path = "/api/payments/" + self.p.post("/api/payments",json=entry).json()["ref"]
+        self.assertEqual(self.p.post("/api/payments",json={**entry,"method":"wallet"}).status_code,409)
+        with patch.object(data,"now_ms",return_value=self.p.get(path).json()["expires"]):
+            self.assertEqual(self.p.get(path).json()["state"],"expired")
+            self.assertEqual(self.p.post(path+"/confirm",json={}).status_code,409)
+            self.assertEqual(self.p.get(path+"/qr.svg").status_code,409)
+        self.assertEqual(self.other.post(path+"/cancel",json={}).status_code,404)
+        self.assertEqual(self.p.post(path+"/cancel",json={}).status_code,200)
+        self.assertEqual(self.p.get(path).json()["state"],"cancelled")
+        self.assertEqual(self.p.post(path+"/confirm",json={}).status_code,409)
+        next_entry = {**entry,"request_id":str(uuid4())}
+        path = "/api/payments/" + self.p.post("/api/payments",json=next_entry).json()["ref"]
+        self.purchase(entry,self.other)
+        self.assertEqual(self.p.post(path+"/confirm",json={}).status_code,409)
+        self.assertEqual(self.p.get("/api/trips").json(),[])
+        self.assertEqual(self.p.get("/api/home").json()["balance"], sales.OPENING_CREDIT)
+
+    def test_rating_after_first_purchase_is_separate_from_rating_a_flight(self):
+        path = "/api/purchase-review"
+        self.assertIsNone(self.p.get(path).json())
+        code = self.purchase(self.purchase_body(self.transfer))
+        first = self.p.get(path).json()
+        self.assertEqual(first["code"],code)
+        self.assertTrue(self.p.get("/api/trips/"+code).json()["ask_purchase_review"])
+        second = self.purchase(self.purchase_body(self.direct))
+        receipt = self.p.get("/api/trips/"+second).json()
+        self.assertFalse(receipt["ask_purchase_review"])
+        rating = {"order_id":first["id"], "rating":5}
+        self.assertEqual(self.p.post(path,json={**rating,"order_id":receipt["order_id"]}).status_code,409)
+        self.assertEqual(self.other.post(path,json=rating).status_code,409)
+        self.assertEqual(self.p.post(path,json=rating).status_code,200)
+        self.assertEqual(self.p.post(path,json=rating).status_code,409)
+        self.assertIsNone(self.p.get(path).json())
+        self.assertFalse(self.p.get("/api/trips/"+code).json()["ask_purchase_review"])
+        feedback = self.admin.get("/api/reviews").json()[0]
+        self.assertEqual((feedback["purchase_order"], feedback["trip_code"]), (first["id"],None))
+        self.assertEqual(self.p.post("/api/reviews",json={"trip_code":code,"rating":5,"body":"Test"}).status_code,409)
+
     def test_carrier_cancellation_after_connection_started_refunds_only_unused_leg(self):
         body = self.purchase_body(self.transfer, 0)
         code = self.purchase(body)
@@ -230,6 +305,25 @@ class TicketSalesTests(unittest.TestCase):
             self.assertEqual((row["seat"],row["trip_tasks"],row["order_id"]), ("1A",3,None))
             self.assertEqual(db.execute("SELECT airline_id FROM users WHERE id=1").fetchone()[0], 1)
             self.assertIsNone(db.execute("SELECT trip_code FROM reviews").fetchone()[0])
+
+    def test_sales_upgrade_preserves_wallet_receipts_and_admin_fares(self):
+        with patch.object(data, "DB_PATH", data.DB_PATH.with_name("sales-v1.sqlite3")), closing(data.connect()) as db:
+            db.executescript((data.ROOT / "schema.sql").read_text(encoding="utf-8"))
+            db.executescript((data.ROOT / "migrations" / "001_ticket_sales.sql").read_text(encoding="utf-8"))
+            db.execute("PRAGMA user_version=1")
+            uid = data.create_account(db, "Old", "old@example.test", "migration-test", "passenger")
+            db.execute("INSERT INTO fares(name,baggage,markup_pct,refund_pct) VALUES ('Эконом','12 кг',5,40)")
+            db.execute("""INSERT INTO orders(user,request_id,request_body,created,fare_name,baggage,refund_pct,
+                        subtotal,discount_pct,total,refunded) VALUES (?,'past','[]',1234,'Лайт','5 кг',0,20000,0,20000,5000)""", (uid,))
+            for _ in range(2):
+                data.init_db()
+            self.assertEqual(db.execute("PRAGMA user_version").fetchone()[0],2)
+            row = db.execute("SELECT fare_name,payment_method,payment_ref,total,refunded FROM orders").fetchone()
+            self.assertEqual(tuple(row),("Эконом","wallet","AP-00000001",20000,5000))
+            self.assertEqual(sales.balance(db,uid),sales.OPENING_CREDIT-15000)
+            self.assertEqual(db.execute("SELECT available FROM fares WHERE id=1").fetchone()[0],0)
+            self.assertEqual(tuple(db.execute("SELECT markup_pct,baggage,available FROM fares WHERE name='Эконом'").fetchone()),(5,"12 кг",1))
+            self.assertEqual({r[0] for r in db.execute("SELECT name FROM fares WHERE available=1")},{"Эконом","Эконом Плюс","Бизнес-класс"})
 
     def test_live_observations_use_registration_and_ignore_ground(self):
         feed = {"now": int(time.time()*1000), "ac": [

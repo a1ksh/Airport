@@ -70,7 +70,9 @@ Open the tunnel URL in Safari, or enter its base HTTPS address in the Android ap
 
 Pull the new revision, stop the old server, then run `setup_accounts.py` and restart Uvicorn using the existing `AIRPORT_WEB_DB` path. Startup migrates the schema in one transaction. Existing bookings keep their seats, codes and QR passes. Earlier bookings carry no payment charge. Existing operators, flights and support requests are assigned to Air Astana. Account setup provisions the FlyArystan operator on an upgraded server.
 
-The demo schedule covers today and the next five days. A transfer requires 60–360 minutes between arrival and the next departure. The sales API recalculates prices, checks every seat and debits the wallet together. Repeating the same checkout or refund preserves the original transaction. The live board uses adsb.lol without a key. Receiver coverage varies by airport. A missing signal and a provider outage have separate screen states.
+The demo schedule covers today and the next five days. A transfer requires 60–360 minutes between arrival and the next departure. A pending payment expires in five minutes. On confirmation the API rechecks prices and seats, records the wallet, simulated card or QR payment and issues all tickets in one transaction. Repeating confirmation or refund preserves the original transaction. Card and QR refunds leave the demo wallet balance intact. Existing paid orders retain their wallet ledger and receive a receipt number.
+
+Passengers can rate their first purchase from the ticket or the reviews screen. Each operator-confirmed flight remains separately eligible for a flight review. The route map uses the same fictional city and terminal network on the website and in the offline Android About screen. The live board uses adsb.lol without a key. Receiver coverage varies by airport. A missing signal and a provider outage have separate screen states.
 
 ## Run the ticketing regression tests
 

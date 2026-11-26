@@ -28,7 +28,7 @@ import javax.crypto.spec.PBEKeySpec;
 public final class AirportDb extends SQLiteOpenHelper {
     public static final String PASSENGER = "passenger", OPERATOR = "operator", ADMIN = "admin";
     public static final String DEMO_PASSWORD = "Airport123";
-    public static final String[] FLIGHT_STATES = {"Уақтылы", "Кешігуде", "Отырғызу", "Тоқтатылды"};
+    public static final String[] FLIGHT_STATES = {"Уақытылы", "Кешігуде", "Отырғызу", "Тоқтатылды"};
     public static final String[] TICKET_STATES = {"Жаңа", "Қаралып жатыр", "Шешілді"};
     public static final int ALL_TRIP_TASKS = 15;
     public static final ZoneOffset ASTANA = ZoneOffset.ofHours(5);

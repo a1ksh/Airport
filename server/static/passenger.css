@@ -1,0 +1,39 @@
+.funding-choice{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--line);border-radius:13px;cursor:pointer}
+.funding-choice:has(input:checked){border-color:var(--blue);background:#eef5ff}
+.funding-choice input[type=radio],.fare-choice input[type=radio]{width:18px;min-height:0;height:18px;padding:0;margin:0;flex:none;accent-color:var(--blue)}
+.funding-choice small,.funding-choice strong{display:block}
+.funding-choice small{margin-top:2px;color:var(--muted)}
+.payment-slip{display:grid;gap:5px}
+.payment-amount{font-size:clamp(30px,8vw,44px);line-height:1.15;letter-spacing:-.04em;margin:5px 0;font-variant-numeric:tabular-nums}
+.demo-bank-card{max-width:315px;width:100%;margin:4px auto;display:grid;gap:16px;padding:18px 20px;border-radius:17px;color:#fff;background:linear-gradient(130deg,#103c45,#236a6b)}
+.demo-bank-card span{font-weight:650}.demo-bank-card strong{font-size:20px;letter-spacing:.08em}.demo-bank-card small{color:#d7edeb}
+.demo-sms{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#eef5fa;padding:9px 13px;border-radius:10px;font-size:14px}
+.demo-sms b{letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.qr-approval{text-align:center}.qr-approval img{width:148px;height:148px}
+.checkin-clock{color:#214d79;background:#edf5fb;padding:7px 11px;border-radius:10px;font-size:13px;font-weight:650;margin:8px 0}
+.purchase-invite{border-left:3px solid #26735a;background:#f2faf5}
+.purchase-invite summary{display:grid;gap:3px;cursor:pointer;list-style:none}.purchase-invite summary::-webkit-details-marker{display:none}
+.purchase-invite summary span{color:#176543;font-size:14px}.purchase-invite[open] form{margin-top:12px}
+.wayfinding{display:grid;gap:12px;align-items:start}.map-card{padding:0;overflow:hidden}
+#local-route{max-width:960px;margin:auto;padding:12px}
+.map-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px}
+.map-heading span,.route-distance{font-size:13px;font-weight:650;color:#496260}
+.route-map{width:100%;height:auto;display:block;border-block:1px solid #dce4df}
+.map-hint{padding:10px 14px}.map-road,.map-path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.map-road{stroke:#fff;stroke-width:7}.map-path{stroke:#186255;stroke-width:5}.map-path.foot{stroke-dasharray:4 5}
+.map-stop{cursor:pointer;outline:none}.map-target{fill:transparent}
+.map-dot{fill:#fff;stroke:#687d78;stroke-width:2}.map-dot.from{fill:#146451;stroke:#fff}.map-dot.to{fill:#224580;stroke:#fff}
+.map-stop:focus-visible .map-target{stroke:#194a94;stroke-width:2;stroke-dasharray:3 2}
+.map-stop text{text-anchor:middle;pointer-events:none}.map-letter{fill:#fff;font-size:12px;font-weight:750}
+.map-label{fill:#263e38;font-size:12px;font-weight:700;stroke:#f5f4ed;stroke-width:3;paint-order:stroke}
+.map-fields{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px}
+.map-fields .map-swap{grid-column:2;grid-row:1 / 3;font-size:22px;min-width:42px}
+.map-fields .field{grid-column:1}.map-settings{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.map-itinerary h2{font-size:25px;font-variant-numeric:tabular-nums}.map-itinerary>.sub{margin-top:3px}
+.route-steps{list-style:none;padding:0;margin:12px 0 0}.route-steps li{display:flex;position:relative;gap:10px;align-items:flex-start;padding:0 0 12px;font-size:14px}
+.route-steps li::before{content:"";position:relative;z-index:1;flex:none;width:10px;height:10px;margin-top:5px;border:2px solid #438275;background:#fff;border-radius:50%}
+.route-steps li:not(:last-child)::after{content:"";position:absolute;left:4px;top:14px;bottom:-5px;border-left:2px solid #bcdbd4}
+.route-steps li:last-child{padding-bottom:0}.route-steps li:last-child::before{background:#224580;border-color:#224580}
+.route-steps small{display:block;color:var(--muted);margin-top:2px}
+.receipt-lines b{overflow-wrap:anywhere}
+@media(min-width:800px){#app.wayfinding-page{max-width:960px}.wayfinding{grid-template-columns:minmax(0,1.3fr) minmax(290px,1fr);gap:18px}}

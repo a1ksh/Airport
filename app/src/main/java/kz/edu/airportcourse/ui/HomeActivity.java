@@ -12,7 +12,6 @@ import kz.edu.airportcourse.data.WeatherData;
 import static kz.edu.airportcourse.data.AirportDb.*;
 
 public final class HomeActivity extends BaseActivity {
-    private static final String MAPS = "https://www.google.com/maps/dir/?api=1&destination=51.0222%2C71.4669";
     private int weatherRequest;
     private boolean bannerAnimated;
 
@@ -31,7 +30,7 @@ public final class HomeActivity extends BaseActivity {
         click(R.id.checkin, this::checkIn);
         click(R.id.staff_log, () -> open(StaffListActivity.class));
         click(R.id.weather, () -> openWeather(WeatherData.ASTANA_CITY));
-        click(R.id.maps, () -> external(MAPS, "com.google.android.apps.maps"));
+        click(R.id.maps, () -> open(RouteMapActivity.class));
         click(R.id.official, () -> external("https://www.nn-airport.kz/flight-status", null));
         click(R.id.baggage, this::guide);
         click(R.id.media, () -> open(MediaActivity.class));
@@ -153,12 +152,12 @@ public final class HomeActivity extends BaseActivity {
             .setItems(new String[]{"Багажды дайындау", "Ұшуға дайындық", "Арнайы көмек"}, (dialog, item) -> {
                 String[] advice = {
                     "Қол жүгі мен тіркелетін багаждың өлшемі мен салмағын әуе компаниясының бронь растауынан қараңыз.",
-                    "Құжатыңызды дайындап, терминал мен қақпаны ресми таблодан тексеріңіз. Әуежайға баратын жолды Google Maps арқылы ашуға болады.",
+                    "Құжатыңызды дайындап, терминал мен қақпаны ресми таблодан тексеріңіз. Оқу картасынан терминалға баратын жолды таңдаңыз.",
                     "Арбамен жүру немесе басқа көмек қажет болса, әуе компаниясына алдын ала хабарласыңыз. Бұл қолданбада «Хабарлар» арқылы да өтінім қалдыра аласыз."
                 };
                 var details = new AlertDialog.Builder(this).setTitle(R.string.travel_guide)
                     .setMessage(advice[item]).setNegativeButton("Жабу", null);
-                if (item == 1) details.setPositiveButton("Google Maps", (d, b) -> external(MAPS, "com.google.android.apps.maps"));
+                if (item == 1) details.setPositiveButton(R.string.about_route, (d, b) -> open(RouteMapActivity.class));
                 if (item == 2) details.setPositiveButton("Хабарлар", (d, b) -> open(TicketsActivity.class));
                 details.show();
             }).setNegativeButton("Жабу", null).show();
@@ -168,7 +167,7 @@ public final class HomeActivity extends BaseActivity {
         var popup = new android.widget.PopupMenu(this, findViewById(R.id.more));
         popup.inflate(R.menu.home_menu);
         popup.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.menu_map) external(MAPS, "com.google.android.apps.maps");
+            if (item.getItemId() == R.id.menu_map) open(RouteMapActivity.class);
             else if (item.getItemId() == R.id.menu_board) external("https://www.nn-airport.kz/flight-status", null);
             else if (item.getItemId() == R.id.menu_about) open(AboutActivity.class);
             return true;

@@ -2,16 +2,27 @@ plugins {
     id 'com.android.application'
 }
 
+// The pre-connection Android screen and the website use one copy of the route network and UI.
+def routeAssets = layout.buildDirectory.dir('generated/routeAssets')
+def bundleRouteMap = tasks.register('bundleRouteMap', Sync) {
+    from(rootProject.file('server/static')) {
+        include 'wayfinding.html', 'wayfinding.js', 'airport.css', 'passenger.css'
+        into 'route'
+    }
+    into routeAssets
+}
+
 android {
     namespace 'kz.edu.airportcourse'
     compileSdk 37
+    sourceSets.main.assets.srcDir(routeAssets.get().asFile)
 
     defaultConfig {
         applicationId 'kz.edu.airportcourse'
         minSdk 26
         targetSdk 37
-        versionCode 3
-        versionName '1.2'
+        versionCode 4
+        versionName '1.3'
     }
 
     compileOptions {
@@ -20,6 +31,8 @@ android {
         encoding 'UTF-8'
     }
 }
+
+tasks.named('preBuild').configure { dependsOn(bundleRouteMap) }
 
 dependencies {
     implementation 'androidx.activity:activity:1.13.0'

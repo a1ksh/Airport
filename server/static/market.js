@@ -1,7 +1,8 @@
 "use strict";
 
 const tenge = new Intl.NumberFormat("kk-KZ", {maximumFractionDigits:0});
-const money = value => tenge.format(value) + " ₸";
+const money = value => tenge.formatToParts(value).map(p => p.type === "group" ? "\u202f" : p.value).join("") + "\u00a0₸";
+const paymentMethods = {wallet:"Демо әмиян", card:"Банк картасы", qr:"QR арқылы төлеу"};
 const hm = ms => mobileDate(ms).slice(11);
 const duration = minutes => [Math.floor(minutes / 60) ? Math.floor(minutes / 60) + " сағ" : "",
   minutes % 60 ? minutes % 60 + " мин" : ""].filter(Boolean).join(" ");
@@ -82,7 +83,7 @@ async function checkoutPage(ids, back, version) {
   const quote = await api(href("quote",{flights:ids}));
   if (version !== routeVersion) return;
   const safeBack = back?.startsWith("search?") ? back : "flight/" + quote.legs[0].id;
-  checkoutState = {quote, request:requestId()};
+  checkoutState = {quote, selection:"", request:""};
   const fares = quote.fares.map((f,i) => '<label class="fare-choice"><input name="fare_id" type="radio" value="' + f.id
     + '"' + (i === 0 ? ' checked' : '') + '><span><strong>' + esc(f.name) + '</strong><small>' + esc(f.baggage)
     + ' · Қайтарым ' + f.refund_pct + '%</small></span><b>' + money(f.total) + '</b></label>').join("");
@@ -90,8 +91,9 @@ async function checkoutPage(ids, back, version) {
     + quote.legs.map(f => '<div class="stack">' + flightInfo(f) + '</div>').join('<hr class="rule">')
     + '<p class="meta">Астана уақыты (UTC+5)</p></section><fieldset class="card stack"><legend>Билет тарифі</legend>'
     + fares + '</fieldset>' + quote.legs.map(f => seatPicker(f, quote.seats)).join("")
-    + '<section class="card fields"><h2>Демо әмиянмен төлеу</h2><div class="receipt-lines" id="payment-summary"></div>'
-    + '<p class="meta">Оқу төлемі. Банк картасы қажет емес.</p>' + submit("Төлеу")
+    + '<fieldset class="card fields"><legend>Төлем тәсілі</legend>' + paymentOptions(quote.balance) + '</fieldset>'
+    + '<section class="card fields"><h2>Тапсырыс сомасы</h2><div class="receipt-lines" id="payment-summary"></div>'
+    + '<p class="meta">Барлық төлем оқу режимінде өтеді.</p>' + submit("Төлемге өту")
     + button("refresh","Орындар мен бағаны жаңарту","","text") + '</section></form>',"trips");
   updatePrice();
 }
@@ -99,10 +101,10 @@ async function checkoutPage(ids, back, version) {
 function updatePrice() {
   const quote = checkoutState.quote;
   const fare = quote.fares.find(f => f.id === Number($('[name="fare_id"]:checked').value));
+  const saving = fare.subtotal - fare.total;
   $("#payment-summary").innerHTML = receiptLine("Тариф бағасы",money(fare.subtotal))
-    + receiptLine("Жолаушы жеңілдігі · " + quote.loyalty.percent + "%","−" + money(fare.subtotal-fare.total))
-    + receiptLine("Демо әмияндағы қалдық",money(quote.balance)) + receiptLine("Төлем сомасы",money(fare.total));
-  $('[data-form="checkout"] [type="submit"]').textContent = money(fare.total) + " төлеу";
+    + receiptLine("Жолаушы жеңілдігі · " + quote.loyalty.percent + "%",(saving ? "−" : "") + money(saving))
+    + receiptLine("Төлем сомасы",money(fare.total));
 }
 
 function receiptLine(label, value) {
@@ -110,14 +112,17 @@ function receiptLine(label, value) {
 }
 
 async function pay(values) {
-  const {quote,request} = checkoutState;
+  const {quote} = checkoutState;
   const fare = quote.fares.find(f => f.id === Number(values.fare_id));
-  if (!await confirmAction("Төлемді растау",quote.legs.map(f => f.number).join(" / ") + " · " + fare.name
-      + " · " + money(fare.total) + " демо әмияннан алынады.", "Төлеу")) return;
-  const result = await api("checkout","POST",{legs:quote.legs.map(f => ({flight:f.id,seat:values["seat-"+f.id]})),
-    fare_id:fare.id,expected_total:fare.total,request_id:request});
-  showMessage("Төлем қабылданды. Билетіңіз дайын.");
-  go("trip/" + result.code);
+  const purchase = {legs:quote.legs.map(f => ({flight:f.id,seat:values["seat-"+f.id]})),
+    fare_id:fare.id,expected_total:fare.total,method:values.method};
+  const selection = JSON.stringify(purchase);
+  if (selection !== checkoutState.selection) {
+    checkoutState.selection = selection;
+    checkoutState.request = requestId();
+  }
+  const result = await api("payments","POST",{...purchase,request_id:checkoutState.request});
+  go("payment/" + result.ref);
 }
 
 function walletCard(stats) {
@@ -128,50 +133,7 @@ function walletCard(stats) {
       : 'Ең жоғары жеңілдік қолданылады.') + '</p></section>';
 }
 
-const navigationPlaces = {
-  T1:["T1 · Халықаралық терминал","Astana International Airport Terminal 1, Qabanbay Batyr Ave 119/2, Astana, Kazakhstan"],
-  T2:["T2 · Ішкі рейстер терминалы","Astana International Airport Terminal 2, Qabanbay Batyr Ave 119, Astana, Kazakhstan"],
-  station:["Нұрлы жол вокзалы","Nurly Zhol Railway Station, Astana, Kazakhstan"],
-  city:["Бәйтерек · қала орталығы","Baiterek Tower, Astana, Kazakhstan"],
-};
 
-function navigationPage(params) {
-  const fields = Object.entries(navigationPlaces).map(([id,p]) => [id,p[0]]);
-  const origin = params.get("origin") || "current", dest = params.get("destination") || "T1";
-  page(title("Жол бағыты") + '<form class="card fields" data-form="directions"><h2>А нүктесінен Б нүктесіне</h2>'
-    + selectField("Қайдан","origin",[["current","Қазіргі орным"],...fields,["custom","Басқа мекенжай"]],origin)
-    + formField("Бастапқы мекенжай","origin_text",'maxlength="160" placeholder="Қала, көше немесе нысан"')
-    + selectField("Қайда","destination",[...fields,["custom","Басқа қала немесе мекенжай"]],dest)
-    + formField("Баратын мекенжай","destination_text",'maxlength="160" placeholder="Қала, көше немесе нысан"')
-    + selectField("Қалай барасыз?","travelmode",[["driving","Көлікпен"],["transit","Қоғамдық көлікпен"],["walking","Жаяу"]],origin === "T1" || origin === "T2" ? "walking" : "driving")
-    + '<p class="meta" id="terminal-hint"></p>' + submit("Маршрутты көрсету") + '</form><div class="section" id="map-result"></div>',"home");
-  navigationInputs();
-}
-
-function navigationInputs() {
-  for (const name of ["origin","destination"]) {
-    const custom = $('[name="'+name+'"]').value === "custom", input = $('[name="'+name+'_text"]');
-    input.closest("label").hidden = !custom;
-    input.disabled = !custom;
-    input.required = custom;
-  }
-  const dest = $('[name="destination"]').value;
-  $("#terminal-hint").textContent = dest === "T1" ? "Тіркеу залы · бірінші қабат." : dest === "T2" ? "Тіркеу залы · екінші қабат." : "";
-  $("#map-result").replaceChildren();
-}
-
-function mapResult(values) {
-  const resolve = (key, custom) => key === "current" ? "" : key === "custom" ? custom.trim() : navigationPlaces[key][1];
-  const origin = resolve(values.origin,values.origin_text), destination = resolve(values.destination,values.destination_text);
-  if (!destination || (values.origin === "custom" && !origin) || origin.toLowerCase() === destination.toLowerCase()) {
-    throw new Error("Екі түрлі нүктені таңдаңыз.");
-  }
-  const params = new URLSearchParams({api:"1",destination,travelmode:values.travelmode});
-  if (origin) params.set("origin",origin);
-  const label = key => values[key] === "custom" ? values[key+"_text"] : navigationPlaces[values[key]]?.[0] || "Қазіргі орным";
-  $("#map-result").innerHTML = '<section class="card stack"><h3>' + esc(label("origin")) + ' → ' + esc(label("destination"))
-    + '</h3>' + external("https://www.google.com/maps/dir/?" + params.toString(),ice("map") + " Google Maps-та ашу ↗") + '</section>';
-}
 
 async function livePage(params, version) {
   const q = params.get("q") || "", mode = params.get("mode") || "registration";
@@ -180,7 +142,8 @@ async function livePage(params, version) {
   page(title("Қазір әуеде") + '<div class="stack"><form class="card fields" data-form="live-search">'
     + selectField("Нөмір енгізілмесе, осы әуежай маңын көрсету","airport",airports,airport)
     + selectField("Іздеу түрі","mode",[["registration","Борттың тіркеу нөмірі"],["flight","Рейс нөмірі немесе шақыру белгісі"]],mode)
-    + formField("Нөмір","q",'type="search" maxlength="16" placeholder="' + (mode === "flight" ? "KC123 немесе KZR123" : "Мысалы, P4-KCA") + '" value="' + esc(q) + '"')
+    + formField("Нөмір","q",'type="search" maxlength="16" placeholder="Нөмір немесе бос қалдырыңыз" value="' + esc(q) + '"')
+    + '<p class="meta">Бұл таблода нақты әуе кемелері көрсетіледі. Бортты тізімнен де таңдай аласыз.</p>'
     + submit("Іздеу") + '</form><section class="stack" id="live-results"><p class="sub">Деректер жүктелуде…</p></section>'
     + external(official,"Астана әуежайының ресми таблосы ↗") + '</div>',"home");
   let result;
@@ -194,9 +157,15 @@ async function livePage(params, version) {
   $("#live-results").innerHTML = '<div class="row space wrap"><h2>' + (q ? esc(q) : esc(airport) + " маңындағы борттар") + '</h2>'
     + '<span class="badge">' + result.aircraft.length + ' борт</span></div><p class="meta">adsb.lol · ' + stamp(result.observed)
     + ' (UTC+5) · <a href="https://www.adsb.lol/docs/open-data/api" target="_blank" rel="noopener">ODbL</a></p>'
-    + (result.aircraft.map(a => '<article class="card row space"><div><h3>' + esc(a.callsign) + '</h3><p class="meta">'
-      + esc(a.registration || "Нөмірі белгісіз") + (a.type ? ' · ' + esc(a.type) : '') + '</p></div><span class="badge ok">Әуеде</span></article>').join("")
-      || blank("Қазір осы іздеу бойынша әуедегі борттан сигнал жоқ.")) + button("refresh","Жаңарту");
+    + (result.aircraft.map(a => {
+      const content = '<div class="row space"><div><h3>' + esc(a.callsign) + '</h3><p class="meta">'
+        + esc(a.registration || "Нөмірі белгісіз") + (a.type ? ' · ' + esc(a.type) : '') + '</p></div><span class="badge ok">Әуеде</span></div>';
+      return q ? '<article class="card">' + content + '</article>'
+        : rowLink(href("live",{airport,mode:a.registration ? "registration" : "flight",q:a.registration || a.callsign}),content);
+    }).join("") || blank("Қазір осы іздеу бойынша әуедегі борттан сигнал жоқ."))
+    + (q ? link(href("live",{airport}),"Маңайдағы борттарды көру")
+      : !result.aircraft.length && airport !== "IST" ? link(href("live",{airport:"IST"}),"Ыстанбұл маңын тексеру") : "")
+    + button("refresh","Жаңарту");
 }
 
 function salesAdmin(params, version) {
@@ -210,6 +179,7 @@ function salesAdmin(params, version) {
       + ' · Қайтарым ' + f.refund_pct + '%</p></article>').join("");
     const payments = sales.payments.map(o => '<article class="card"><div class="row space wrap"><strong>' + esc(o.name)
       + '</strong><b>' + money(o.total) + '</b></div><p class="meta">' + esc(o.code) + ' · ' + esc(o.fare_name) + ' · ' + stamp(o.created)
+      + '</p><p class="meta">' + esc(paymentMethods[o.payment_method]) + ' · ' + esc(o.payment_ref)
       + '</p><span class="badge ' + (o.cancelled_at ? 'cancelled' : 'ok') + '">' + (o.cancelled_at ? 'Қайтарылды · ' + money(o.refunded) : 'Төленді')
       + '</span><details><summary>Рейстер мен орындар</summary>' + o.legs.map(l => '<p class="meta">' + esc(l.airline) + ' · ' + esc(l.number)
         + ' · ' + esc(l.origin) + ' → ' + esc(l.destination) + ' · ' + esc(l.seat) + (l.cancelled ? ' · Қайтарылды' : '') + '</p>').join("") + '</details></article>').join("");

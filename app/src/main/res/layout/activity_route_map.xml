@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/page_root" style="@style/Page" android:orientation="vertical">
+    <LinearLayout style="@style/Row">
+        <Button android:id="@id/back" style="@style/IconButton" android:text="@string/activity_admin_back_text"
+            android:contentDescription="@string/activity_admin_back_contentDescription"/>
+        <TextView style="@style/Title" android:layout_marginStart="12dp" android:text="@string/about_route"/>
+    </LinearLayout>
+    <WebView android:id="@+id/route_map" android:layout_width="match_parent"
+        android:layout_height="0dp" android:layout_weight="1"/>
+</LinearLayout>

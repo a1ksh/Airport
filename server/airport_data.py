@@ -29,7 +29,7 @@ CITIES = {
     "Дубай": ("DXB", "БАӘ", 25.2048, 55.2708),
     "Ташкент": ("TAS", "Өзбекстан", 41.2995, 69.2401),
 }
-FLIGHT_STATES = ("Уақтылы", "Кешігуде", "Отырғызу", "Тоқтатылды")
+FLIGHT_STATES = ("Уақытылы", "Кешігуде", "Отырғызу", "Тоқтатылды")
 TICKET_STATES = ("Жаңа", "Қаралып жатыр", "Шешілді")
 SEATS = tuple(f"{row}{letter}" for row in range(1, 6) for letter in "ABCDEF")
 
@@ -99,14 +99,17 @@ def init_db():
         db.execute("PRAGMA journal_mode=WAL")
         db.executescript((ROOT / "schema.sql").read_text(encoding="utf-8"))
         with transaction(db):
-            if db.execute("PRAGMA user_version").fetchone()[0] < 1:
+            installed = db.execute("PRAGMA user_version").fetchone()[0]
+            for version, filename in enumerate(("001_ticket_sales.sql", "002_passenger_services.sql"), 1):
+                if version <= installed:
+                    continue
                 sql = ""
-                for line in (ROOT / "migrations/001_ticket_sales.sql").read_text(encoding="utf-8").splitlines(True):
+                for line in (ROOT / "migrations" / filename).read_text(encoding="utf-8").splitlines(True):
                     sql += line
                     if sqlite3.complete_statement(sql):
                         db.execute(sql)
                         sql = ""
-                db.execute("PRAGMA user_version=1")
+                db.execute(f"PRAGMA user_version={version}")
             for name, email, role in DEMOS:
                 account = db.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
                 if role == "passenger":
