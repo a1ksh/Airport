@@ -84,7 +84,7 @@ Use the same server address on all devices. For a cross-device demonstration, op
 6. As the airline operator, edit a flight's schedule and check-in window. Passengers with flight alerts enabled receive the new times. Check a passenger in during that window and confirm the completed flight after its arrival.
 7. Open **Пікірлер** after a confirmed flight to rate it once. For a quick demonstration the initial passenger already has two confirmed trips. Three completed flights earn 5% off future tickets and ten earn 10%. **Профиль** shows the discount and wallet balance.
 8. As administrator, open **Компаниялар, тарифтер және төлемдер** to add an airline with its first operator, add a fare with baggage and refund terms, or view payments and refunds across airlines.
-9. Open **Жол бағыты**, tap two stops or use the selectors, and choose a bus, car or walking route. Try the intercity bus station to T1, or walk from T1 to T2. The highlighted route, distance and time use a fictional network. **Қазір әуеде** opens the ADSB.lol live map over Kazakhstan in the browser.
+9. Open **Жол бағыты**, tap two stops or use the selectors, and choose a bus, car or walking route. Try the intercity bus station to T1, or walk from T1 to T2. The highlighted route, distance and time use a fictional network. **Қазір әуеде** opens Flightradar24 over Kazakhstan. Tap an aircraft to see its flight number and route.
 10. In **Сапарлар**, open a ticket and choose **Билетті PDF ретінде сақтау**. The file contains that leg's route, departure, arrival, seat and QR code and opens offline. On Android choose a folder in the system file picker. Download a fresh copy if the airline changes the schedule or gate. The operator checks the booking's current status at check-in.
 
 Each passenger starts with 1,000,000 demo tenge. Prices and fare rules are classroom examples. Payment and refund entries stay in the project's SQLite database. The ticket flow accepts no card details. If the airline cancels a flight or a schedule change breaks the connection, unused affected tickets qualify for a full refund of their paid amount.
@@ -154,7 +154,7 @@ Both videos were checked for playback, pause, resume and stop behavior. Fourteen
 ## References
 
 - [Open-Meteo weather API](https://open-meteo.com/en/docs)
-- [ADSB.lol live aircraft map](https://adsb.lol/?lat=48.5&lon=67.5&zoom=4)
+- [Flightradar24 live aircraft map over Kazakhstan](https://www.flightradar24.com/48.5,67.5/5)
 - [Astana Airport terminal and check-in information](https://www.nn-airport.kz/pages/check-in_procedures)
 - [Google Maps directions URLs](https://developers.google.com/maps/documentation/urls/get-started)
 - [Android SQLiteOpenHelper](https://developer.android.com/reference/android/database/sqlite/SQLiteOpenHelper)

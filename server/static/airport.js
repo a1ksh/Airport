@@ -10,7 +10,7 @@ const tasks = ["Ұшу құжаттарын дайындадым","Багаж ш
 const airportName = "Нұрсұлтан Назарбаев халықаралық әуежайы";
 const airportAddress = "Астана, Қабанбай батыр даңғылы, 119";
 const official = "https://www.nn-airport.kz/flights";
-const liveMap = "https://adsb.lol/?lat=48.5&lon=67.5&zoom=4";
+const liveMap = "https://www.flightradar24.com/48.5,67.5/5";
 const mediaPath = "/static/media/";
 const clips = {
   travel: {file:"travel-story", title:"Саяхат картасы", time:"0:19",
